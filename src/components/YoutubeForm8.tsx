@@ -1,5 +1,6 @@
 
-// Video -> React Hook Form Tutorial - 10 - Custom Validation
+// Video -> React Hook Form Tutorial - 13 - Nested Objects
+
 import { useForm } from 'react-hook-form';
 import { DevTool } from '@hookform/devtools';
 
@@ -8,11 +9,42 @@ type FormValues = {
     username: string,
     email: string,
     channel: string,
+    social: {
+        twitter: string,
+        facebook: string,
+    }
 }
 
-export const YouTubeForm6 = () => {
+export const YouTubeForm8 = () => {
 
-    const form = useForm<FormValues>();
+    // Version 1: 
+    const form = useForm<FormValues>({
+        defaultValues: {
+            username: "Batman",
+            email: "",
+            channel: "",
+            social: {
+                twitter: "",
+                facebook: "",
+            }
+
+        }
+    });
+
+    // Version 2 : 
+    // const form = useForm<FormValues>({
+    //     defaultValues: async () => {
+    //         const response = await fetch("https://jsonplaceholder.typicode.com/users/1");
+    //         const data = await response.json();
+    //         return {
+    //             username: "Batman",
+    //             email: data.email,
+    //             channel: ""
+    //         }
+    //     }
+    // })
+
+
     const { register, control, handleSubmit, formState } = form;
 
     // Step 1 :  Define submit function 
@@ -71,6 +103,22 @@ export const YouTubeForm6 = () => {
 
                     })} />
                     <p className='error'>{errors.channel?.message}</p>
+                </div>
+                <div>
+                    <label htmlFor='twitter'>Twitter</label>
+                    <input type='text' id='twitter'  {...register("social.twitter", {
+                        required: "Twitter username is required."
+
+                    })} />
+                    <p className='error'>{errors.social?.twitter?.message}</p>
+                </div>
+                <div>
+                    <label htmlFor='facebook'>Facebook</label>
+                    <input type='text' id='facebook'  {...register("channel", {
+                        required: "Facebook username is required."
+
+                    })} />
+                    <p className='error'>{errors.social?.facebook?.message}</p>
                 </div>
                 <button className="mt-4 bg-amber-700 border-amber-400 w-20 h-10 rounded-2xl">Submit</button>
             </form>

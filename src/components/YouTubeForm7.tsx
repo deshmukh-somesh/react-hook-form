@@ -1,5 +1,6 @@
 
-// Video -> React Hook Form Tutorial - 10 - Custom Validation
+// Video -> React Hook Form Tutorial - 12 - Default Values
+
 import { useForm } from 'react-hook-form';
 import { DevTool } from '@hookform/devtools';
 
@@ -10,9 +11,31 @@ type FormValues = {
     channel: string,
 }
 
-export const YouTubeForm6 = () => {
+export const YouTubeForm7 = () => {
 
-    const form = useForm<FormValues>();
+    // Version 1: 
+    const form = useForm<FormValues>({
+        defaultValues:{
+            username:"Batman",
+            email:"",
+            channel:"",
+        }
+    });
+
+    // Version 2 : 
+    // const form = useForm<FormValues>({
+    //     defaultValues: async () => {
+    //         const response = await fetch("https://jsonplaceholder.typicode.com/users/1");
+    //         const data = await response.json();
+    //         return {
+    //             username: "Batman",
+    //             email: data.email,
+    //             channel: ""
+    //         }
+    //     }
+    // })
+    
+
     const { register, control, handleSubmit, formState } = form;
 
     // Step 1 :  Define submit function 
