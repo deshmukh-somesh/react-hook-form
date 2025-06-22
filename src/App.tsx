@@ -47,9 +47,9 @@ function App() {
       {/* <CounterApp1 /> */}
       {/* <CounterApp2/> */}
       {/* <SimpleTodoList/> */}
-    {/* <WeatherApp/> */}
-    {/* <ShoppingCart/> */}
-    <FlexboxFroggy/>
+      {/* <WeatherApp/> */}
+      {/* <ShoppingCart/> */}
+      <FlexboxFroggy />
     </>
   )
 }
