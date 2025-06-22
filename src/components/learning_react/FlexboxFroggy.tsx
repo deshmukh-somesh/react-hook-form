@@ -6,170 +6,596 @@ import { oneDark } from '@codemirror/theme-one-dark';
 // Game levels configuration
 
 const LEVELS = [
+    // BASIC JUSTIFY-CONTENT
     {
         id: 1,
         instruction: "Welcome to Flexbox Froggy! Your goal is to help the frogs reach their lily pads by writing CSS flexbox code. For this first level, use the justify-content property to center all the frogs.",
         solution: "justify-content: center;",
         frogs: [{ id: 1, color: 'green' }, { id: 2, color: 'yellow' }, { id: 3, color: 'red' }],
-        lilyPads: [{ id: 1, color: 'green', position: 'center-1' }, { id: 2, color: 'yellow', position: 'center-2' }, { id: 3, color: 'red', position: 'center-3' }],
+        lilyPads: [{ id: 1, color: 'green' }, { id: 2, color: 'yellow' }, { id: 3, color: 'red' }],
         allowedProperties: ['justify-content']
     },
     {
         id: 2,
-        instruction: "The lily pads are on the right side. Use justify-content to move all the frogs to the end of the pond.",
-        solution: "justify-content: flex-end;",
-        frogs: [{ id: 1, color: 'green' }, { id: 2, color: 'blue' }, { id: 3, color: 'purple' }],
-        lilyPads: [{ id: 1, color: 'green', position: 'flex-end-1' }, { id: 2, color: 'blue', position: 'flex-end-2' }, { id: 3, color: 'purple', position: 'flex-end-3' }],
+        instruction: "Use justify-content to move all the frogs to the start of the pond.",
+        solution: "justify-content: flex-start;",
+        frogs: [{ id: 1, color: 'cyan' }, { id: 2, color: 'lime' }],
+        lilyPads: [{ id: 1, color: 'cyan' }, { id: 2, color: 'lime' }],
         allowedProperties: ['justify-content']
     },
     {
         id: 3,
-        instruction: "When frogs are at both sides of the pond, they have maximum space between them. Use justify-content to position the frogs at the start and end.",
-        solution: "justify-content: space-between;",
-        frogs: [{ id: 1, color: 'green' }, { id: 2, color: 'red' }],
-        lilyPads: [{ id: 1, color: 'green', position: 'flex-start' }, { id: 2, color: 'red', position: 'flex-end' }],
+        instruction: "The lily pads are on the right side. Use justify-content to move all the frogs to the end of the pond.",
+        solution: "justify-content: flex-end;",
+        frogs: [{ id: 1, color: 'orange' }, { id: 2, color: 'pink' }, { id: 3, color: 'indigo' }],
+        lilyPads: [{ id: 1, color: 'orange' }, { id: 2, color: 'pink' }, { id: 3, color: 'indigo' }],
         allowedProperties: ['justify-content']
     },
     {
         id: 4,
-        instruction: "Now the lily pads are arranged with equal space around each one. Use the justify-content property to position the frogs.",
-        solution: "justify-content: space-around;",
-        frogs: [{ id: 1, color: 'green' }, { id: 2, color: 'yellow' }],
-        lilyPads: [{ id: 1, color: 'green', position: 'space-around-1' }, { id: 2, color: 'yellow', position: 'space-around-2' }],
+        instruction: "When frogs are at both sides of the pond, they have maximum space between them. Use justify-content to position the frogs with space between.",
+        solution: "justify-content: space-between;",
+        frogs: [{ id: 1, color: 'blue' }, { id: 2, color: 'purple' }],
+        lilyPads: [{ id: 1, color: 'blue' }, { id: 2, color: 'purple' }],
         allowedProperties: ['justify-content']
     },
     {
         id: 5,
-        instruction: "Now try distributing three frogs evenly with justify-content. There should be equal space between each frog.",
-        solution: "justify-content: space-evenly;",
-        frogs: [{ id: 1, color: 'green' }, { id: 2, color: 'yellow' }, { id: 3, color: 'red' }],
-        lilyPads: [{ id: 1, color: 'green', position: 'space-evenly-1' }, { id: 2, color: 'yellow', position: 'space-evenly-2' }, { id: 3, color: 'red', position: 'space-evenly-3' }],
+        instruction: "Now the lily pads are arranged with equal space around each one. Use the justify-content property to position the frogs.",
+        solution: "justify-content: space-around;",
+        frogs: [{ id: 1, color: 'green' }, { id: 2, color: 'orange' }],
+        lilyPads: [{ id: 1, color: 'green' }, { id: 2, color: 'orange' }],
         allowedProperties: ['justify-content']
     },
     {
         id: 6,
-        instruction: "The frogs need to move to the bottom of the pond. Use align-items to move them all down.",
-        solution: "align-items: flex-end;",
-        frogs: [{ id: 1, color: 'green' }, { id: 2, color: 'yellow' }, { id: 3, color: 'blue' }, { id: 4, color: 'red' }],
-        lilyPads: [{ id: 1, color: 'green', position: 'bottom-1' }, { id: 2, color: 'yellow', position: 'bottom-2' }, { id: 3, color: 'blue', position: 'bottom-3' }, { id: 4, color: 'red', position: 'bottom-4' }],
+        instruction: "Now try distributing three frogs evenly with justify-content. There should be equal space between each frog.",
+        solution: "justify-content: space-evenly;",
+        frogs: [{ id: 1, color: 'pink' }, { id: 2, color: 'cyan' }, { id: 3, color: 'lime' }],
+        lilyPads: [{ id: 1, color: 'pink' }, { id: 2, color: 'cyan' }, { id: 3, color: 'lime' }],
+        allowedProperties: ['justify-content']
+    },
+
+    // BASIC ALIGN-ITEMS
+    {
+        id: 7,
+        instruction: "Use align-items to move all the frogs to the start (top) of the pond.",
+        solution: "align-items: flex-start;",
+        frogs: [{ id: 1, color: 'indigo' }, { id: 2, color: 'yellow' }],
+        lilyPads: [{ id: 1, color: 'indigo' }, { id: 2, color: 'yellow' }],
         allowedProperties: ['align-items']
     },
     {
-        id: 7,
-        instruction: "Perfect! Now center all the frogs both horizontally and vertically in the pond.",
-        solution: "justify-content: center;\nalign-items: center;",
-        frogs: [{ id: 1, color: 'green' }, { id: 2, color: 'yellow' }, { id: 3, color: 'red' }],
-        lilyPads: [{ id: 1, color: 'green', position: 'center-center-1' }, { id: 2, color: 'yellow', position: 'center-center-2' }, { id: 3, color: 'red', position: 'center-center-3' }],
-        allowedProperties: ['justify-content', 'align-items']
-    },
-    {
         id: 8,
-        instruction: "The frogs need to be in the bottom-right corner. Use both justify-content and align-items.",
-        solution: "justify-content: flex-end;\nalign-items: flex-end;",
-        frogs: [{ id: 1, color: 'green' }, { id: 2, color: 'red' }],
-        lilyPads: [{ id: 1, color: 'green', position: 'bottom-right-1' }, { id: 2, color: 'red', position: 'bottom-right-2' }],
-        allowedProperties: ['justify-content', 'align-items']
+        instruction: "The frogs need to move to the bottom of the pond. Use align-items to move them all down.",
+        solution: "align-items: flex-end;",
+        frogs: [{ id: 1, color: 'red' }, { id: 2, color: 'blue' }, { id: 3, color: 'orange' }, { id: 4, color: 'green' }],
+        lilyPads: [{ id: 1, color: 'red' }, { id: 2, color: 'blue' }, { id: 3, color: 'orange' }, { id: 4, color: 'green' }],
+        allowedProperties: ['align-items']
     },
     {
         id: 9,
-        instruction: "Help these frogs get to their lily pads. You'll need to use flex-direction to change the direction of the flex container and reverse their order.",
-        solution: "flex-direction: row-reverse;",
-        frogs: [{ id: 1, color: 'green' }, { id: 2, color: 'yellow' }, { id: 3, color: 'blue' }],
-        lilyPads: [{ id: 3, color: 'blue', position: 'row-reverse-1' }, { id: 2, color: 'yellow', position: 'row-reverse-2' }, { id: 1, color: 'green', position: 'row-reverse-3' }],
-        allowedProperties: ['flex-direction']
+        instruction: "Center the frogs vertically in the pond using align-items.",
+        solution: "align-items: center;",
+        frogs: [{ id: 1, color: 'pink' }, { id: 2, color: 'cyan' }],
+        lilyPads: [{ id: 1, color: 'pink' }, { id: 2, color: 'cyan' }],
+        allowedProperties: ['align-items']
     },
     {
         id: 10,
-        instruction: "Help the frogs get to their lily pads. Use flex-direction to stack them vertically and justify-content to move them down.",
-        solution: "flex-direction: column;\njustify-content: flex-end;",
-        frogs: [{ id: 1, color: 'green' }, { id: 2, color: 'yellow' }],
-        lilyPads: [{ id: 1, color: 'green', position: 'column-end-1' }, { id: 2, color: 'yellow', position: 'column-end-2' }],
-        allowedProperties: ['flex-direction', 'justify-content']
+        instruction: "Use align-items to stretch the frogs to fill the full height of the pond.",
+        solution: "align-items: stretch;",
+        frogs: [{ id: 1, color: 'lime' }, { id: 2, color: 'indigo' }],
+        lilyPads: [{ id: 1, color: 'lime' }, { id: 2, color: 'indigo' }],
+        allowedProperties: ['align-items']
     },
+
+    // COMBINATIONS
     {
         id: 11,
-        instruction: "Help the frogs get to their lily pads. Use flex-direction to stack them in reverse vertical order.",
-        solution: "flex-direction: column-reverse;",
-        frogs: [{ id: 1, color: 'green' }, { id: 2, color: 'yellow' }],
-        lilyPads: [{ id: 2, color: 'yellow', position: 'column-reverse-1' }, { id: 1, color: 'green', position: 'column-reverse-2' }],
-        allowedProperties: ['flex-direction']
+        instruction: "Perfect! Now center all the frogs both horizontally and vertically in the pond.",
+        solution: "justify-content: center; align-items: center;",
+        frogs: [{ id: 1, color: 'purple' }, { id: 2, color: 'orange' }, { id: 3, color: 'pink' }],
+        lilyPads: [{ id: 1, color: 'purple' }, { id: 2, color: 'orange' }, { id: 3, color: 'pink' }],
+        allowedProperties: ['justify-content', 'align-items']
     },
     {
         id: 12,
-        instruction: "The frogs need to be in the bottom-left corner, but the container is in column direction. Use flex-direction, justify-content, and align-items.",
-        solution: "flex-direction: column;\njustify-content: flex-end;\nalign-items: flex-start;",
-        frogs: [{ id: 1, color: 'green' }, { id: 2, color: 'red' }],
-        lilyPads: [{ id: 1, color: 'green', position: 'column-bottom-left-1' }, { id: 2, color: 'red', position: 'column-bottom-left-2' }],
-        allowedProperties: ['flex-direction', 'justify-content', 'align-items']
+        instruction: "The frogs need to be in the bottom-right corner. Use both justify-content and align-items.",
+        solution: "justify-content: flex-end; align-items: flex-end;",
+        frogs: [{ id: 1, color: 'cyan' }, { id: 2, color: 'lime' }],
+        lilyPads: [{ id: 1, color: 'cyan' }, { id: 2, color: 'lime' }],
+        allowedProperties: ['justify-content', 'align-items']
     },
+
+    // FLEX-DIRECTION
     {
         id: 13,
-        instruction: "Only the yellow frog needs to go to the bottom while the others stay at the top. Use align-self to move just this frog.",
+        instruction: "Help these frogs get to their lily pads. You'll need to use flex-direction to reverse their order horizontally.",
+        solution: "flex-direction: row-reverse;",
+        frogs: [{ id: 1, color: 'green' }, { id: 2, color: 'indigo' }, { id: 3, color: 'orange' }],
+        lilyPads: [{ id: 1, color: 'green' }, { id: 2, color: 'indigo' }, { id: 3, color: 'orange' }],
+        allowedProperties: ['flex-direction']
+    },
+    {
+        id: 14,
+        instruction: "Help the frogs get to their lily pads. Use flex-direction to stack them vertically.",
+        solution: "flex-direction: column;",
+        frogs: [{ id: 1, color: 'pink' }, { id: 2, color: 'blue' }],
+        lilyPads: [{ id: 1, color: 'pink' }, { id: 2, color: 'blue' }],
+        allowedProperties: ['flex-direction']
+    },
+    {
+        id: 15,
+        instruction: "Help the frogs get to their lily pads. Use flex-direction to stack them in reverse vertical order.",
+        solution: "flex-direction: column-reverse;",
+        frogs: [{ id: 1, color: 'cyan' }, { id: 2, color: 'red' }],
+        lilyPads: [{ id: 1, color: 'cyan' }, { id: 2, color: 'red' }],
+        allowedProperties: ['flex-direction']
+    },
+    {
+        id: 16,
+        instruction: "Help the frogs get to their lily pads. Use flex-direction to stack them vertically and justify-content to move them down.",
+        solution: "flex-direction: column; justify-content: flex-end;",
+        frogs: [{ id: 1, color: 'lime' }, { id: 2, color: 'purple' }],
+        lilyPads: [{ id: 1, color: 'lime' }, { id: 2, color: 'purple' }],
+        allowedProperties: ['flex-direction', 'justify-content']
+    },
+    {
+        id: 17,
+        instruction: "The frogs need to be in the bottom-left corner, but the container is in column direction. Use flex-direction, justify-content, and align-items.",
+        solution: "flex-direction: column; justify-content: flex-end; align-items: flex-start;",
+        frogs: [{ id: 1, color: 'indigo' }, { id: 2, color: 'orange' }],
+        lilyPads: [{ id: 1, color: 'indigo' }, { id: 2, color: 'orange' }],
+        allowedProperties: ['flex-direction', 'justify-content', 'align-items']
+    },
+
+    // ALIGN-SELF
+    {
+        id: 18,
+        instruction: "Only the pink frog needs to go to the bottom while the others stay at the top. Use align-self to move just this frog.",
         solution: "align-self: flex-end;",
-        frogs: [{ id: 1, color: 'green' }, { id: 2, color: 'red' }, { id: 3, color: 'yellow', special: true }, { id: 4, color: 'blue' }],
-        lilyPads: [{ id: 1, color: 'green', position: 'top-1' }, { id: 2, color: 'red', position: 'top-2' }, { id: 3, color: 'yellow', position: 'bottom' }, { id: 4, color: 'blue', position: 'top-3' }],
+        frogs: [{ id: 1, color: 'green' }, { id: 2, color: 'cyan' }, { id: 3, color: 'pink', special: true }, { id: 4, color: 'lime' }],
+        lilyPads: [{ id: 1, color: 'green' }, { id: 2, color: 'cyan' }, { id: 3, color: 'pink' }, { id: 4, color: 'lime' }],
         allowedProperties: ['align-self'],
         applyToFrog: 3
     },
     {
-        id: 14,
-        instruction: "This pond has lots of frogs! Use order to rearrange them. The green frog should be last.",
+        id: 19,
+        instruction: "Move only the indigo frog to the top using align-self.",
+        solution: "align-self: flex-start;",
+        frogs: [{ id: 1, color: 'yellow' }, { id: 2, color: 'indigo', special: true }, { id: 3, color: 'orange' }],
+        lilyPads: [{ id: 1, color: 'yellow' }, { id: 2, color: 'indigo' }, { id: 3, color: 'orange' }],
+        allowedProperties: ['align-self'],
+        applyToFrog: 2
+    },
+    {
+        id: 20,
+        instruction: "Center only the cyan frog vertically while others stay at their current position.",
+        solution: "align-self: center;",
+        frogs: [{ id: 1, color: 'red' }, { id: 2, color: 'cyan', special: true }, { id: 3, color: 'purple' }],
+        lilyPads: [{ id: 1, color: 'red' }, { id: 2, color: 'cyan' }, { id: 3, color: 'purple' }],
+        allowedProperties: ['align-self'],
+        applyToFrog: 2
+    },
+
+    // ORDER
+    {
+        id: 21,
+        instruction: "This pond has lots of frogs! Use order to rearrange them. The lime frog should be last.",
         solution: "order: 5;",
-        frogs: [{ id: 1, color: 'green', special: true }, { id: 2, color: 'yellow' }, { id: 3, color: 'red' }, { id: 4, color: 'blue' }],
-        lilyPads: [{ id: 2, color: 'yellow', position: 'order-1' }, { id: 3, color: 'red', position: 'order-2' }, { id: 4, color: 'blue', position: 'order-3' }, { id: 1, color: 'green', position: 'order-4' }],
+        frogs: [{ id: 1, color: 'lime', special: true }, { id: 2, color: 'pink' }, { id: 3, color: 'indigo' }, { id: 4, color: 'orange' }],
+        lilyPads: [{ id: 2, color: 'pink' }, { id: 3, color: 'indigo' }, { id: 4, color: 'orange' }, { id: 1, color: 'lime' }],
         allowedProperties: ['order'],
         applyToFrog: 1
     },
     {
-        id: 15,
-        instruction: "The red frog wants to be first in line. Give it a negative order value to move it to the front.",
+        id: 22,
+        instruction: "The orange frog wants to be first in line. Give it a negative order value to move it to the front.",
         solution: "order: -1;",
-        frogs: [{ id: 1, color: 'green' }, { id: 2, color: 'yellow' }, { id: 3, color: 'red', special: true }],
-        lilyPads: [{ id: 3, color: 'red', position: 'order-first' }, { id: 1, color: 'green', position: 'order-second' }, { id: 2, color: 'yellow', position: 'order-third' }],
+        frogs: [{ id: 1, color: 'cyan' }, { id: 2, color: 'blue' }, { id: 3, color: 'orange', special: true }],
+        lilyPads: [{ id: 3, color: 'orange' }, { id: 1, color: 'cyan' }, { id: 2, color: 'blue' }],
         allowedProperties: ['order'],
         applyToFrog: 3
     },
     {
-        id: 16,
-        instruction: "The pond is overflowing with frogs! Use flex-wrap to allow them to wrap to a new line.",
+        id: 23,
+        instruction: "Move the pink frog to be second in line using order.",
+        solution: "order: 2;",
+        frogs: [{ id: 1, color: 'green' }, { id: 2, color: 'pink', special: true }, { id: 3, color: 'indigo' }, { id: 4, color: 'lime' }],
+        lilyPads: [{ id: 1, color: 'green' }, { id: 2, color: 'pink' }, { id: 3, color: 'indigo' }, { id: 4, color: 'lime' }],
+        allowedProperties: ['order'],
+        applyToFrog: 2
+    },
+
+    // FLEX-WRAP
+    {
+        id: 24,
+        instruction: "The pond is completely overflowing with frogs! Use flex-wrap to allow them to wrap to multiple lines.",
         solution: "flex-wrap: wrap;",
-        frogs: [{ id: 1, color: 'green' }, { id: 2, color: 'yellow' }, { id: 3, color: 'red' }, { id: 4, color: 'blue' }, { id: 5, color: 'purple' }, { id: 6, color: 'orange' }, { id: 7, color: 'pink' }],
-        lilyPads: [{ id: 1, color: 'green', position: 'wrap-1' }, { id: 2, color: 'yellow', position: 'wrap-2' }, { id: 3, color: 'red', position: 'wrap-3' }, { id: 4, color: 'blue', position: 'wrap-4' }, { id: 5, color: 'purple', position: 'wrap-5' }, { id: 6, color: 'orange', position: 'wrap-6' }, { id: 7, color: 'pink', position: 'wrap-7' }],
+        frogs: [
+            { id: 1, color: 'green' }, 
+            { id: 2, color: 'orange' }, 
+            { id: 3, color: 'pink' }, 
+            { id: 4, color: 'cyan' }, 
+            { id: 5, color: 'lime' },
+            { id: 6, color: 'indigo' },
+            { id: 7, color: 'yellow' },
+            { id: 8, color: 'red' },
+            { id: 9, color: 'blue' },
+            { id: 10, color: 'purple' }
+        ],
+        lilyPads: [
+            { id: 1, color: 'green' }, 
+            { id: 2, color: 'orange' }, 
+            { id: 3, color: 'pink' }, 
+            { id: 4, color: 'cyan' }, 
+            { id: 5, color: 'lime' },
+            { id: 6, color: 'indigo' },
+            { id: 7, color: 'yellow' },
+            { id: 8, color: 'red' },
+            { id: 9, color: 'blue' },
+            { id: 10, color: 'purple' }
+        ],
         allowedProperties: ['flex-wrap']
     },
     {
-        id: 17,
-        instruction: "Use flex-direction and flex-wrap together. You can use the shorthand property flex-flow.",
+        id: 25,
+        instruction: "This massive frog party needs flex-wrap with wrap-reverse to wrap items but in reverse order.",
+        solution: "flex-wrap: wrap-reverse;",
+        frogs: [
+            { id: 1, color: 'yellow' }, 
+            { id: 2, color: 'red' }, 
+            { id: 3, color: 'blue' }, 
+            { id: 4, color: 'purple' }, 
+            { id: 5, color: 'orange' },
+            { id: 6, color: 'pink' },
+            { id: 7, color: 'cyan' },
+            { id: 8, color: 'lime' }
+        ],
+        lilyPads: [
+            { id: 1, color: 'yellow' }, 
+            { id: 2, color: 'red' }, 
+            { id: 3, color: 'blue' }, 
+            { id: 4, color: 'purple' }, 
+            { id: 5, color: 'orange' },
+            { id: 6, color: 'pink' },
+            { id: 7, color: 'cyan' },
+            { id: 8, color: 'lime' }
+        ],
+        allowedProperties: ['flex-wrap']
+    },
+    {
+        id: 26,
+        instruction: "Even with many frogs, prevent them from wrapping by using flex-wrap: nowrap - they'll squeeze together!",
+        solution: "flex-wrap: nowrap;",
+        frogs: [
+            { id: 1, color: 'pink' }, 
+            { id: 2, color: 'cyan' }, 
+            { id: 3, color: 'lime' }, 
+            { id: 4, color: 'indigo' }, 
+            { id: 5, color: 'orange' },
+            { id: 6, color: 'green' }
+        ],
+        lilyPads: [
+            { id: 1, color: 'pink' }, 
+            { id: 2, color: 'cyan' }, 
+            { id: 3, color: 'lime' }, 
+            { id: 4, color: 'indigo' }, 
+            { id: 5, color: 'orange' },
+            { id: 6, color: 'green' }
+        ],
+        allowedProperties: ['flex-wrap']
+    },
+
+    // FLEX-FLOW (shorthand)
+    {
+        id: 27,
+        instruction: "This tall pond has many frogs! Use flex-flow for column wrap to stack them in multiple columns.",
         solution: "flex-flow: column wrap;",
-        frogs: [{ id: 1, color: 'green' }, { id: 2, color: 'yellow' }, { id: 3, color: 'red' }],
-        lilyPads: [{ id: 1, color: 'green', position: 'column-wrap-1' }, { id: 2, color: 'yellow', position: 'column-wrap-2' }, { id: 3, color: 'red', position: 'column-wrap-3' }],
+        frogs: [
+            { id: 1, color: 'indigo' }, 
+            { id: 2, color: 'orange' }, 
+            { id: 3, color: 'pink' }, 
+            { id: 4, color: 'cyan' }, 
+            { id: 5, color: 'lime' },
+            { id: 6, color: 'yellow' },
+            { id: 7, color: 'red' }
+        ],
+        lilyPads: [
+            { id: 1, color: 'indigo' }, 
+            { id: 2, color: 'orange' }, 
+            { id: 3, color: 'pink' }, 
+            { id: 4, color: 'cyan' }, 
+            { id: 5, color: 'lime' },
+            { id: 6, color: 'yellow' },
+            { id: 7, color: 'red' }
+        ],
         allowedProperties: ['flex-flow']
     },
     {
-        id: 18,
-        instruction: "The frogs have wrapped to multiple lines. Use align-content to pack them towards the start.",
-        solution: "flex-wrap: wrap;\nalign-content: flex-start;",
-        frogs: [{ id: 1, color: 'green' }, { id: 2, color: 'yellow' }, { id: 3, color: 'red' }, { id: 4, color: 'blue' }],
-        lilyPads: [{ id: 1, color: 'green', position: 'content-start-1' }, { id: 2, color: 'yellow', position: 'content-start-2' }, { id: 3, color: 'red', position: 'content-start-3' }, { id: 4, color: 'blue', position: 'content-start-4' }],
+        id: 28,
+        instruction: "A complex frog arrangement! Use flex-flow for row-reverse wrap-reverse with many frogs.",
+        solution: "flex-flow: row-reverse wrap-reverse;",
+        frogs: [
+            { id: 1, color: 'lime' }, 
+            { id: 2, color: 'purple' }, 
+            { id: 3, color: 'yellow' }, 
+            { id: 4, color: 'blue' }, 
+            { id: 5, color: 'red' },
+            { id: 6, color: 'green' },
+            { id: 7, color: 'orange' },
+            { id: 8, color: 'pink' },
+            { id: 9, color: 'cyan' }
+        ],
+        lilyPads: [
+            { id: 1, color: 'lime' }, 
+            { id: 2, color: 'purple' }, 
+            { id: 3, color: 'yellow' }, 
+            { id: 4, color: 'blue' }, 
+            { id: 5, color: 'red' },
+            { id: 6, color: 'green' },
+            { id: 7, color: 'orange' },
+            { id: 8, color: 'pink' },
+            { id: 9, color: 'cyan' }
+        ],
+        allowedProperties: ['flex-flow']
+    },
+
+    // ALIGN-CONTENT (for wrapped lines)
+    {
+        id: 29,
+        instruction: "So many frogs have wrapped to multiple lines! Use align-content to pack them towards the start.",
+        solution: "flex-wrap: wrap; align-content: flex-start;",
+        frogs: [
+            { id: 1, color: 'green' }, 
+            { id: 2, color: 'orange' }, 
+            { id: 3, color: 'pink' }, 
+            { id: 4, color: 'cyan' }, 
+            { id: 5, color: 'lime' },
+            { id: 6, color: 'indigo' },
+            { id: 7, color: 'yellow' },
+            { id: 8, color: 'red' }
+        ],
+        lilyPads: [
+            { id: 1, color: 'green' }, 
+            { id: 2, color: 'orange' }, 
+            { id: 3, color: 'pink' }, 
+            { id: 4, color: 'cyan' }, 
+            { id: 5, color: 'lime' },
+            { id: 6, color: 'indigo' },
+            { id: 7, color: 'yellow' },
+            { id: 8, color: 'red' }
+        ],
         allowedProperties: ['flex-wrap', 'align-content']
     },
     {
-        id: 19,
-        instruction: "Now use align-content to pack the wrapped lines towards the end with space between them.",
-        solution: "flex-wrap: wrap;\nalign-content: space-between;",
-        frogs: [{ id: 1, color: 'green' }, { id: 2, color: 'yellow' }, { id: 3, color: 'red' }, { id: 4, color: 'blue' }],
-        lilyPads: [{ id: 1, color: 'green', position: 'content-between-1' }, { id: 2, color: 'yellow', position: 'content-between-2' }, { id: 3, color: 'red', position: 'content-between-3' }, { id: 4, color: 'blue', position: 'content-between-4' }],
+        id: 30,
+        instruction: "Use align-content to pack these multiple wrapped lines towards the end.",
+        solution: "flex-wrap: wrap; align-content: flex-end;",
+        frogs: [
+            { id: 1, color: 'indigo' }, 
+            { id: 2, color: 'yellow' }, 
+            { id: 3, color: 'red' }, 
+            { id: 4, color: 'blue' }, 
+            { id: 5, color: 'purple' },
+            { id: 6, color: 'orange' },
+            { id: 7, color: 'pink' },
+            { id: 8, color: 'cyan' },
+            { id: 9, color: 'lime' }
+        ],
+        lilyPads: [
+            { id: 1, color: 'indigo' }, 
+            { id: 2, color: 'yellow' }, 
+            { id: 3, color: 'red' }, 
+            { id: 4, color: 'blue' }, 
+            { id: 5, color: 'purple' },
+            { id: 6, color: 'orange' },
+            { id: 7, color: 'pink' },
+            { id: 8, color: 'cyan' },
+            { id: 9, color: 'lime' }
+        ],
         allowedProperties: ['flex-wrap', 'align-content']
     },
     {
-        id: 20,
-        instruction: "Welcome to the final level! Use everything you've learned about flexbox to help all the frogs reach their lily pads. This pond requires flex-direction, justify-content, align-items, and flex-wrap.",
-        solution: "flex-direction: column;\nflex-wrap: wrap;\njustify-content: center;\nalign-items: center;",
-        frogs: [{ id: 1, color: 'green' }, { id: 2, color: 'yellow' }, { id: 3, color: 'red' }, { id: 4, color: 'blue' }, { id: 5, color: 'purple' }],
-        lilyPads: [{ id: 1, color: 'green', position: 'final-1' }, { id: 2, color: 'yellow', position: 'final-2' }, { id: 3, color: 'red', position: 'final-3' }, { id: 4, color: 'blue', position: 'final-4' }, { id: 5, color: 'purple', position: 'final-5' }],
+        id: 31,
+        instruction: "Center all these wrapped frog lines using align-content.",
+        solution: "flex-wrap: wrap; align-content: center;",
+        frogs: [
+            { id: 1, color: 'orange' }, 
+            { id: 2, color: 'pink' }, 
+            { id: 3, color: 'cyan' }, 
+            { id: 4, color: 'lime' }, 
+            { id: 5, color: 'indigo' },
+            { id: 6, color: 'green' },
+            { id: 7, color: 'yellow' },
+            { id: 8, color: 'red' },
+            { id: 9, color: 'blue' },
+            { id: 10, color: 'purple' }
+        ],
+        lilyPads: [
+            { id: 1, color: 'orange' }, 
+            { id: 2, color: 'pink' }, 
+            { id: 3, color: 'cyan' }, 
+            { id: 4, color: 'lime' }, 
+            { id: 5, color: 'indigo' },
+            { id: 6, color: 'green' },
+            { id: 7, color: 'yellow' },
+            { id: 8, color: 'red' },
+            { id: 9, color: 'blue' },
+            { id: 10, color: 'purple' }
+        ],
+        allowedProperties: ['flex-wrap', 'align-content']
+    },
+    {
+        id: 32,
+        instruction: "Use align-content to distribute these many wrapped lines with space between them.",
+        solution: "flex-wrap: wrap; align-content: space-between;",
+        frogs: [
+            { id: 1, color: 'green' }, 
+            { id: 2, color: 'yellow' }, 
+            { id: 3, color: 'red' }, 
+            { id: 4, color: 'blue' }, 
+            { id: 5, color: 'purple' },
+            { id: 6, color: 'orange' },
+            { id: 7, color: 'pink' },
+            { id: 8, color: 'cyan' }
+        ],
+        lilyPads: [
+            { id: 1, color: 'green' }, 
+            { id: 2, color: 'yellow' }, 
+            { id: 3, color: 'red' }, 
+            { id: 4, color: 'blue' }, 
+            { id: 5, color: 'purple' },
+            { id: 6, color: 'orange' },
+            { id: 7, color: 'pink' },
+            { id: 8, color: 'cyan' }
+        ],
+        allowedProperties: ['flex-wrap', 'align-content']
+    },
+    {
+        id: 33,
+        instruction: "Use align-content with space-around for these multiple wrapped frog lines.",
+        solution: "flex-wrap: wrap; align-content: space-around;",
+        frogs: [
+            { id: 1, color: 'pink' }, 
+            { id: 2, color: 'cyan' }, 
+            { id: 3, color: 'lime' }, 
+            { id: 4, color: 'indigo' }, 
+            { id: 5, color: 'orange' },
+            { id: 6, color: 'green' },
+            { id: 7, color: 'yellow' },
+            { id: 8, color: 'red' },
+            { id: 9, color: 'blue' }
+        ],
+        lilyPads: [
+            { id: 1, color: 'pink' }, 
+            { id: 2, color: 'cyan' }, 
+            { id: 3, color: 'lime' }, 
+            { id: 4, color: 'indigo' }, 
+            { id: 5, color: 'orange' },
+            { id: 6, color: 'green' },
+            { id: 7, color: 'yellow' },
+            { id: 8, color: 'red' },
+            { id: 9, color: 'blue' }
+        ],
+        allowedProperties: ['flex-wrap', 'align-content']
+    },
+    {
+        id: 34,
+        instruction: "Distribute these numerous wrapped lines evenly using align-content: space-evenly.",
+        solution: "flex-wrap: wrap; align-content: space-evenly;",
+        frogs: [
+            { id: 1, color: 'cyan' }, 
+            { id: 2, color: 'lime' }, 
+            { id: 3, color: 'indigo' }, 
+            { id: 4, color: 'orange' }, 
+            { id: 5, color: 'pink' },
+            { id: 6, color: 'green' },
+            { id: 7, color: 'yellow' },
+            { id: 8, color: 'red' },
+            { id: 9, color: 'blue' },
+            { id: 10, color: 'purple' }
+        ],
+        lilyPads: [
+            { id: 1, color: 'cyan' }, 
+            { id: 2, color: 'lime' }, 
+            { id: 3, color: 'indigo' }, 
+            { id: 4, color: 'orange' }, 
+            { id: 5, color: 'pink' },
+            { id: 6, color: 'green' },
+            { id: 7, color: 'yellow' },
+            { id: 8, color: 'red' },
+            { id: 9, color: 'blue' },
+            { id: 10, color: 'purple' },
+
+        ],
+        allowedProperties: ['flex-wrap', 'align-content']
+    },
+
+    // FLEX ITEM PROPERTIES
+    {
+        id: 35,
+        instruction: "Make the orange frog grow to take up all the extra space in the pond using flex-grow.",
+        solution: "flex-grow: 1;",
+        frogs: [{ id: 1, color: 'orange', special: true }, { id: 2, color: 'cyan' }, { id: 3, color: 'lime' }],
+        lilyPads: [{ id: 1, color: 'orange' }, { id: 2, color: 'cyan' }, { id: 3, color: 'lime' }],
+        allowedProperties: ['flex-grow'],
+        applyToFrog: 1
+    },
+    {
+        id: 36,
+        instruction: "Make the pink frog grow twice as much as others by giving it flex-grow: 2.",
+        solution: "flex-grow: 2;",
+        frogs: [{ id: 1, color: 'indigo' }, { id: 2, color: 'pink', special: true }, { id: 3, color: 'green' }],
+        lilyPads: [{ id: 1, color: 'indigo' }, { id: 2, color: 'pink' }, { id: 3, color: 'green' }],
+        allowedProperties: ['flex-grow'],
+        applyToFrog: 2
+    },
+    {
+        id: 37,
+        instruction: "Prevent the cyan frog from shrinking when space is limited using flex-shrink: 0.",
+        solution: "flex-shrink: 0;",
+        frogs: [{ id: 1, color: 'yellow' }, { id: 2, color: 'lime' }, { id: 3, color: 'cyan', special: true }],
+        lilyPads: [{ id: 1, color: 'yellow' }, { id: 2, color: 'lime' }, { id: 3, color: 'cyan' }],
+        allowedProperties: ['flex-shrink'],
+        applyToFrog: 3
+    },
+    {
+        id: 38,
+        instruction: "Set the lime frog's initial size to 200px using flex-basis before any growing or shrinking.",
+        solution: "flex-basis: 200px;",
+        frogs: [{ id: 1, color: 'red' }, { id: 2, color: 'lime', special: true }, { id: 3, color: 'indigo' }],
+        lilyPads: [{ id: 1, color: 'red' }, { id: 2, color: 'lime' }, { id: 3, color: 'indigo' }],
+        allowedProperties: ['flex-basis'],
+        applyToFrog: 2
+    },
+    {
+        id: 39,
+        instruction: "Use the flex shorthand to make the indigo frog grow (1), not shrink (0), with a basis of 100px.",
+        solution: "flex: 1 0 100px;",
+        frogs: [{ id: 1, color: 'indigo', special: true }, { id: 2, color: 'orange' }, { id: 3, color: 'pink' }],
+        lilyPads: [{ id: 1, color: 'indigo' }, { id: 2, color: 'orange' }, { id: 3, color: 'pink' }],
+        allowedProperties: ['flex'],
+        applyToFrog: 1
+    },
+
+    // COMPLEX COMBINATIONS
+    {
+        id: 40,
+        instruction: "🌈 THE ULTIMATE FROG PARTY! 🌈 Welcome to the final level! Use everything you've learned about flexbox to help this massive rainbow army of frogs reach their lily pads. This epic magical pond requires flex-direction, justify-content, align-items, and flex-wrap to create the perfect rainbow formation!",
+        solution: "flex-direction: column; flex-wrap: wrap; justify-content: center; align-items: center;",
+        frogs: [
+            { id: 1, color: 'green' }, 
+            { id: 2, color: 'orange' }, 
+            { id: 3, color: 'pink' }, 
+            { id: 4, color: 'cyan' }, 
+            { id: 5, color: 'lime' },
+            { id: 6, color: 'indigo' },
+            { id: 7, color: 'yellow' },
+            { id: 8, color: 'red' },
+            { id: 9, color: 'blue' },
+            { id: 10, color: 'purple' },
+            { id: 11, color: 'green' },
+            { id: 12, color: 'orange' }
+        ],
+        lilyPads: [
+            { id: 1, color: 'green' }, 
+            { id: 2, color: 'orange' }, 
+            { id: 3, color: 'pink' }, 
+            { id: 4, color: 'cyan' }, 
+            { id: 5, color: 'lime' },
+            { id: 6, color: 'indigo' },
+            { id: 7, color: 'yellow' },
+            { id: 8, color: 'red' },
+            { id: 9, color: 'blue' },
+            { id: 10, color: 'purple' },
+            { id: 11, color: 'green' },
+            { id: 12, color: 'orange' }
+        ],
         allowedProperties: ['flex-direction', 'flex-wrap', 'justify-content', 'align-items']
     }
-]
+];
 
 
 const FlexboxFroggy = () => {
@@ -272,6 +698,7 @@ const FlexboxFroggy = () => {
     const getLilyPadContainerStyles = (): React.CSSProperties => {
         const baseStyles: Record<string, string | number> = {
             display: 'flex',
+            
             height: '100%',
             width: '100%',
             position: 'absolute',
@@ -279,7 +706,7 @@ const FlexboxFroggy = () => {
             left: 0,
             pointerEvents: 'none',
             padding: "20px",
-            gap: "30px"
+            gap: "20px"
         };
 
         if (level.solution.trim()) {
@@ -294,18 +721,8 @@ const FlexboxFroggy = () => {
             });
         }
 
-
-        // For wrap demos, we need to constrain the width so items actually wrap
-        if (level.id === 16) {
-            baseStyles.width = '60%'; // Constrain width to force wrapping
-        }
-        if (level.id === 17 || level.id === 18 || level.id === 19) {
-            baseStyles.height = '60%'; // Constrain height for column wrapping
-        }
-        if (level.id === 20) {
-            baseStyles.width = '70%';
-            baseStyles.height = '70%';
-        }
+        const levelConstraints = getLevelConstraints(level.id);
+        Object.assign(baseStyles, levelConstraints);
 
         return baseStyles;
     };
@@ -319,7 +736,7 @@ const FlexboxFroggy = () => {
             top: 0,
             left: 0,
             padding: "20px",
-            gap: "30px"
+            gap: "20px" // Changed from 30px to match lily pads
         };
 
         // Parse user CSS and apply it to position frogs
@@ -334,19 +751,29 @@ const FlexboxFroggy = () => {
             });
         }
 
-        // For wrap demos, we need to constrain the width so items actually wrap
-        if (level.id === 16) {
-            baseStyles.width = '60%'; // Constrain width to force wrapping
-        }
-        if (level.id === 17 || level.id === 18 || level.id === 19) {
-            baseStyles.height = '60%'; // Constrain height for column wrapping
-        }
-        if (level.id === 20) {
-            baseStyles.width = '70%';
-            baseStyles.height = '70%';
-        }
+        // Apply same constraints as lily pads
+        const levelConstraints = getLevelConstraints(level.id);
+        Object.assign(baseStyles, levelConstraints);
 
         return baseStyles;
+    };
+
+    // 3. Enhanced getFrogImage helper function (add this)
+    const getFrogImage = (color: string) => {
+        const imageMap = {
+            green: "/src/assets/images/frog-green.svg",
+            red: "/src/assets/images/frog-red.svg",
+            yellow: "/src/assets/images/frog-yellow.svg",
+            purple: "/src/assets/images/frog-purple.svg",
+            blue: "/src/assets/images/frog-blue.svg",
+            orange: "/src/assets/images/frog-orange.svg", // Add if you have these
+            pink: "/src/assets/images/frog-pink.svg",
+            cyan: "/src/assets/images/frog-cyan.svg",
+            lime: "/src/assets/images/frog-lime.svg",
+            indigo: "/src/assets/images/frog-indigo.svg"
+        };
+
+        return imageMap[color as keyof typeof imageMap] || imageMap.green;
     };
 
     // Add these two new functions to handle individual item styling
@@ -354,19 +781,16 @@ const FlexboxFroggy = () => {
     const getLilyPadStyles = (pad: any): React.CSSProperties => {
         const baseStyles: Record<string, string | number> = {
             // Your existing lily pad base styles
-            width: '80px',
-            height: '80px',
+            width: getItemSize(level.id).width,
+            height: getItemSize(level.id).height,
+
             borderRadius: '50%',
             border: '2px solid rgba(255, 255, 255, 0.3)',
             backdropFilter: 'blur(4px)',
             boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
             flexShrink: 0,
             // Add background color based on pad.color
-            backgroundColor: pad.color === 'green' ? 'rgba(34, 197, 94, 0.7)' :
-                pad.color === 'yellow' ? 'rgba(234, 179, 8, 0.7)' :
-                    pad.color === 'purple' ? 'rgba(147, 51, 234, 0.7)' :
-                        pad.color === 'blue' ? 'rgba(59, 130, 246, 0.7)' :
-                            'rgba(244, 63, 94, 0.7)' // red as fallback
+            backgroundColor: getItemColor(pad.color)
         };
 
         // Apply solution CSS to specific lily pad if this level targets individual items
@@ -384,26 +808,67 @@ const FlexboxFroggy = () => {
         return baseStyles;
     };
 
+    // Helper function for dynamic item sizing
+    const getItemSize = (levelId: number) => {
+        // More items = smaller size
+        const itemCount = level.frogs.length;
+
+        if (itemCount >= 6) {
+            return { width: '60px', height: '60px' };
+        } else if (itemCount >= 4) {
+            return { width: '70px', height: '70px' };
+        } else {
+            return { width: '80px', height: '80px' };
+        }
+    };
+
+    // Helper function for dynamic font sizing
+    const getFontSize = (levelId: number) => {
+        const itemCount = level.frogs.length;
+
+        if (itemCount >= 6) {
+            return '24px';
+        } else if (itemCount >= 4) {
+            return '32px';
+        } else {
+            return '40px';
+        }
+    };
+
+    // Enhanced color palette for more frog colors
+    const getItemColor = (color: string) => {
+        const colors = {
+            green: 'rgba(34, 197, 94, 0.7)',
+            yellow: 'rgba(234, 179, 8, 0.7)',
+            purple: 'rgba(147, 51, 234, 0.7)',
+            blue: 'rgba(59, 130, 246, 0.7)',
+            red: 'rgba(244, 63, 94, 0.7)',
+            orange: 'rgba(249, 115, 22, 0.7)',
+            pink: 'rgba(236, 72, 153, 0.7)',
+            cyan: 'rgba(6, 182, 212, 0.7)',
+            lime: 'rgba(132, 204, 22, 0.7)',
+            indigo: 'rgba(99, 102, 241, 0.7)'
+        };
+
+        return colors[color as keyof typeof colors] || colors.red;
+    };
+
+    // 1. Fix getFrogStyles function - make it dynamic like getLilyPadStyles
     const getFrogStyles = (frog: any): React.CSSProperties => {
         const baseStyles: Record<string, string | number> = {
-            // Your existing frog base styles
-            width: '80px',
-            height: '80px',
+            // Use dynamic sizing instead of hardcoded 80px
+            width: getItemSize(level.id).width,
+            height: getItemSize(level.id).height,
             borderRadius: '50%',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: '40px',
+            fontSize: getFontSize(level.id), // Use dynamic font size
             transition: 'all 0.3s ease',
             flexShrink: 0,
-            // Add frog-specific styling
-            // backgroundColor: frog.color === 'green' ? 'rgba(34, 197, 94, 0.9)' :
-            //     frog.color === 'yellow' ? 'rgba(234, 179, 8, 0.9)' :
-            //         frog.color === 'purple' ? 'rgba(147, 51, 234, 0.9)' :
-            //             frog.color === 'blue' ? 'rgba(59, 130, 246, 0.9)' :
-            //                 'rgba(244, 63, 94, 0.9)', // red as fallback
-            // border: '2px solid rgba(255, 255, 255, 0.4)',
-            // boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)'
+            // Highlight special frogs with outline
+            outline: frog.special ? '3px solid rgba(255, 255, 255, 0.8)' : 'none',
+            outlineOffset: '2px'
         };
 
         // Apply user CSS to specific frog if this level targets individual items
@@ -421,10 +886,51 @@ const FlexboxFroggy = () => {
         return baseStyles;
     };
 
+    const getLevelConstraints = (levelId: number): Record<string, string | number> => {
+        const constraints: Record<string, string | number> = {};
+
+
+        // Wrap demos need constrained width/height to force wrapping
+        if ([24, 25, 26].includes(levelId)) { // flex-wrap levels
+            constraints.width = '50%'; // Force wrapping with more items
+            constraints.maxWidth = '400px';
+        }
+
+        // Column wrap demos need constrained height
+        if ([27, 28].includes(levelId)) { // flex-flow column wrap levels
+            constraints.height = '60%';
+            constraints.maxHeight = '300px';
+        }
+
+        // Align-content levels need wrapping constraints
+        if ([29, 30, 31, 32, 33, 34].includes(levelId)) {
+            constraints.width = '60%';
+            constraints.height = '80%';
+            constraints.maxWidth = '500px';
+            constraints.maxHeight = '400px';
+        }
+
+        // Flex item property levels might need special sizing
+        if ([35, 36, 37, 38, 39].includes(levelId)) {
+            constraints.width = '80%'; // More space to see grow/shrink effects
+            constraints.minWidth = '300px';
+        }
+
+        // Final complex level
+        if (levelId === 40) {
+            constraints.width = '70%';
+            constraints.height = '70%';
+            constraints.maxWidth = '600px';
+            constraints.maxHeight = '500px';
+        }
+
+        return constraints;
+    }
+
 
     const getPondStyles = (): React.CSSProperties => {
         return {
-            // display: "flex",
+            display: "flex",
             minHeight: '65vh',
             background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
             border: '2px solid rgba(255, 255, 255, 0.2)',
@@ -660,14 +1166,7 @@ const FlexboxFroggy = () => {
                                     {level.lilyPads.map(pad => (
                                         <div
                                             key={`pad-${pad.id}`}
-                                            className="w-20 h-20 sm:w-25 sm:h-25 lg:w-26 lg:h-26 rounded-full border-2 border-white/30 backdrop-blur-sm shadow-2xl flex-shrink-0"
-                                            // backgroundColor: pad.color === 'green' ? 'rgba(34, 197, 94, 0.7)' :
-                                            //     pad.color === 'yellow' ? 'rgba(234, 179, 8, 0.7)' :
-                                            //         pad.color === 'purple' ? 'rgba(147, 51, 234, 0.7)' :
-                                            //             pad.color === 'blue' ? 'rgba(59, 130, 246, 0.7)' :
-                                            //                 'rgba(244, 63, 94, 0.7)', // red as fallback
-                                            // boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
-                                            
+                                            className="rounded-full border-2 border-white/30 backdrop-blur-sm shadow-2xl flex-shrink-0"
                                             style={getLilyPadStyles(pad)}
                                         />
                                     ))}
@@ -680,16 +1179,15 @@ const FlexboxFroggy = () => {
                                             key={`frog-${frog.id}`}
                                             // className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-full flex items-center justify-center text-xl sm:text-2xl lg:text-3xl shadow-2xl border-2 border-white/20 backdrop-blur-sm transition-all duration-500 hover:scale-110 animate-pulse"
                                             className={`w-20 h-20 sm:w-25 sm:h-25 lg:w-30 lg:h-30 rounded-full flex items-center justify-center text-xl sm:text-2xl lg:text-3xl backdrop-blur-0 shadow-sm ${isFrogCorrectlyPositioned() ? '' : 'animate-bounce'}`}
-                                        // style={{
-                                        //     backgroundColor: frog.color === 'green' ? 'rgba(22, 163, 74, 0.9)' : 'rgba(220, 20, 60, 0.9)',
-                                        //     color: 'white',
-                                        //     boxShadow: '0 10px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
-                                        //     animationDuration: '2s'
-                                        // }}
-                                        style={getFrogStyles(frog)}
-                                        >
-                                            <img className='h-16 w-16' src={frog.color === "green" ? "/src/assets/images/frog-green.svg" : frog.color === "red" ? "/src/assets/images/frog-red.svg" : frog.color === "yellow" ? "/src/assets/images/frog-yellow.svg" : frog.color === "purple" ? "/src/assets/images/frog-purple.svg" : "/src/assets/images/frog-blue.svg"} alt={`${frog.color} frog bouncing`} />
 
+                                            style={getFrogStyles(frog)}
+                                        >
+                                            <img
+                                                className={`${getItemSize(level.id).width === '60px' ? 'h-12 w-12' :
+                                                    getItemSize(level.id).width === '70px' ? 'h-14 w-14' : 'h-16 w-16'}`}
+                                                src={getFrogImage(frog.color)}
+                                                alt={`${frog.color} frog`}
+                                            />
                                         </div>
                                     ))}
                                 </div>
