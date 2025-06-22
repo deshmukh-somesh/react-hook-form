@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react'
 // https://api.openweathermap.org/data/3.0/onecall?lat={lat}&lon={lon}&exclude={part}&appid={API key}
 
 const WeatherApp: React.FC = () => {
-    const apiKey = "cb8ff42369810c782d502f9c91689417"
+   
     interface WeatherData {
         name: string,
         temp: number,
