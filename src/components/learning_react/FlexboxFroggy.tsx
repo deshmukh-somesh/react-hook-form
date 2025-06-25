@@ -1,18 +1,54 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import CodeMirror from '@uiw/react-codemirror';
 import { css } from '@codemirror/lang-css';
 import { oneDark } from '@codemirror/theme-one-dark';
 
 // Game levels configuration
+type Frog = {
+    id: number;
+    color: string;
+    special?: boolean;
+    order?: number;
+    disabled?: boolean;
+};
 
-const LEVELS = [
+type LilyPad = {
+    id: number;
+    color: string;
+    order?: number;
+};
+
+type ValidateSolutionFunction = (userCSS: string) => boolean;
+
+type Level = {
+    id: number;
+    instruction: string;
+    solution: string;
+    validateSolution?: ValidateSolutionFunction;
+    frogs: Frog[];
+    lilyPads: LilyPad[];
+    allowedProperties: string[];
+    applyToFrog?: number;
+    isIndividualTarget?: boolean;
+    hasPresetOrders?: boolean;
+
+};
+
+type Levels = Level[];
+
+const extractOrderValue = (css: string): number => {
+    const match = css.match(/order:\s*(-?\d+)/);
+    return match && match[1] ? parseInt(match[1]) : 0;
+}
+
+const LEVELS: Levels = [
     // BASIC JUSTIFY-CONTENT
     {
         id: 1,
         instruction: "Welcome to Flexbox Froggy! Your goal is to help the frogs reach their lily pads by writing CSS flexbox code. For this first level, use the justify-content property to center all the frogs.",
         solution: "justify-content: center;",
-        frogs: [{ id: 1, color: 'green' }, { id: 2, color: 'yellow' }, { id: 3, color: 'red' }],
-        lilyPads: [{ id: 1, color: 'green' }, { id: 2, color: 'yellow' }, { id: 3, color: 'red' }],
+        frogs: [{ id: 1, color: 'green' }],
+        lilyPads: [{ id: 1, color: 'green' }],
         allowedProperties: ['justify-content']
     },
     {
@@ -158,7 +194,8 @@ const LEVELS = [
         frogs: [{ id: 1, color: 'green' }, { id: 2, color: 'cyan' }, { id: 3, color: 'pink', special: true }, { id: 4, color: 'lime' }],
         lilyPads: [{ id: 1, color: 'green' }, { id: 2, color: 'cyan' }, { id: 3, color: 'pink' }, { id: 4, color: 'lime' }],
         allowedProperties: ['align-self'],
-        applyToFrog: 3
+        applyToFrog: 3,
+        isIndividualTarget: true,
     },
     {
         id: 19,
@@ -167,7 +204,8 @@ const LEVELS = [
         frogs: [{ id: 1, color: 'yellow' }, { id: 2, color: 'indigo', special: true }, { id: 3, color: 'orange' }],
         lilyPads: [{ id: 1, color: 'yellow' }, { id: 2, color: 'indigo' }, { id: 3, color: 'orange' }],
         allowedProperties: ['align-self'],
-        applyToFrog: 2
+        applyToFrog: 2,
+        isIndividualTarget: true,
     },
     {
         id: 20,
@@ -176,48 +214,79 @@ const LEVELS = [
         frogs: [{ id: 1, color: 'red' }, { id: 2, color: 'cyan', special: true }, { id: 3, color: 'purple' }],
         lilyPads: [{ id: 1, color: 'red' }, { id: 2, color: 'cyan' }, { id: 3, color: 'purple' }],
         allowedProperties: ['align-self'],
-        applyToFrog: 2
+        applyToFrog: 2,
+        isIndividualTarget: true,
     },
 
     // ORDER
     {
         id: 21,
         instruction: "This pond has lots of frogs! Use order to rearrange them. The lime frog should be last.",
-        solution: "order: 5;",
-        frogs: [{ id: 1, color: 'lime', special: true }, { id: 2, color: 'pink' }, { id: 3, color: 'indigo' }, { id: 4, color: 'orange' }],
-        lilyPads: [{ id: 2, color: 'pink' }, { id: 3, color: 'indigo' }, { id: 4, color: 'orange' }, { id: 1, color: 'lime' }],
+        solution: "order: 4",
+        validateSolution: (userCSS: string): boolean => {
+            const order = extractOrderValue(userCSS);
+
+            return order >= 4;
+        },
+        frogs: [{ id: 1, color: 'lime', special: true, disabled: false }, { id: 2, color: 'pink', order: 1, disabled: true }, { id: 3, color: 'indigo', order: 2, disabled: true }, { id: 4, color: 'orange', order: 3, disabled: true }],
+        lilyPads: [{ id: 2, color: 'pink', order: 1 }, { id: 3, color: 'indigo', order: 2 }, { id: 4, color: 'orange', order: 3 }, { id: 1, color: 'lime', order: 4 }],
         allowedProperties: ['order'],
-        applyToFrog: 1
+        applyToFrog: 1,
+        isIndividualTarget: true,
     },
     {
         id: 22,
         instruction: "The orange frog wants to be first in line. Give it a negative order value to move it to the front.",
         solution: "order: -1;",
-        frogs: [{ id: 1, color: 'cyan' }, { id: 2, color: 'blue' }, { id: 3, color: 'orange', special: true }],
-        lilyPads: [{ id: 3, color: 'orange' }, { id: 1, color: 'cyan' }, { id: 2, color: 'blue' }],
+        validateSolution: (userCSS: string): boolean => {
+            const order = extractOrderValue(userCSS);
+            return order < 0;
+        },
+        frogs: [
+            { id: 1, color: 'cyan', order: 0, disabled: true },        // Preset
+            { id: 2, color: 'blue', order: 0, disabled: true },        // Preset
+            { id: 3, color: 'orange', special: true, disabled: false } // User edits this
+        ],
+        lilyPads: [
+            { id: 3, color: 'orange', order: -1 },  // 1st position (target)
+            { id: 1, color: 'cyan', order: 0 },     // 2nd position
+            { id: 2, color: 'blue', order: 0 }      // 3rd position
+        ],
         allowedProperties: ['order'],
-        applyToFrog: 3
+        applyToFrog: 3,
+        isIndividualTarget: true,
     },
+
     {
         id: 23,
         instruction: "Move the pink frog to be second in line using order.",
-        solution: "order: 2;",
-        frogs: [{ id: 1, color: 'green' }, { id: 2, color: 'pink', special: true }, { id: 3, color: 'indigo' }, { id: 4, color: 'lime' }],
-        lilyPads: [{ id: 1, color: 'green' }, { id: 2, color: 'pink' }, { id: 3, color: 'indigo' }, { id: 4, color: 'lime' }],
+        solution: "order: 2;",  // ✅ This makes pink second
+        frogs: [
+            { id: 1, color: 'green', order: 1, disabled: true },      // order: 0 (first)
+            { id: 2, color: 'pink', special: true, disabled: false },  // order: 1 (second) 
+            { id: 3, color: 'indigo', order: 3, disabled: true },     // order: 0 (third)
+            { id: 4, color: 'lime', order: 4, disabled: true }        // order: 0 (fourth)
+        ],
+        lilyPads: [
+            { id: 1, color: 'green', order: 1 },   // Shows target postion position 1
+            { id: 2, color: 'pink', order: 2 },    // Shows target postion position 2 ✅
+            { id: 3, color: 'indigo', order: 3 },  // Shows target postion position 3  
+            { id: 4, color: 'lime', order: 4 }     // Shows target postion position 4
+        ],
         allowedProperties: ['order'],
-        applyToFrog: 2
+        applyToFrog: 2,
+        isIndividualTarget: true,
     },
-
     // FLEX-WRAP
     {
         id: 24,
         instruction: "The pond is completely overflowing with frogs! Use flex-wrap to allow them to wrap to multiple lines.",
         solution: "flex-wrap: wrap;",
         frogs: [
-            { id: 1, color: 'green' }, 
-            { id: 2, color: 'orange' }, 
-            { id: 3, color: 'pink' }, 
-            { id: 4, color: 'cyan' }, 
+            { id: 1, color: 'green' },
+            { id: 2, color: 'orange' },
+            { id: 3, color: 'pink' },
+            { id: 4, color: 'cyan' },
             { id: 5, color: 'lime' },
             { id: 6, color: 'indigo' },
             { id: 7, color: 'yellow' },
@@ -226,10 +295,10 @@ const LEVELS = [
             { id: 10, color: 'purple' }
         ],
         lilyPads: [
-            { id: 1, color: 'green' }, 
-            { id: 2, color: 'orange' }, 
-            { id: 3, color: 'pink' }, 
-            { id: 4, color: 'cyan' }, 
+            { id: 1, color: 'green' },
+            { id: 2, color: 'orange' },
+            { id: 3, color: 'pink' },
+            { id: 4, color: 'cyan' },
             { id: 5, color: 'lime' },
             { id: 6, color: 'indigo' },
             { id: 7, color: 'yellow' },
@@ -244,20 +313,21 @@ const LEVELS = [
         instruction: "This massive frog party needs flex-wrap with wrap-reverse to wrap items but in reverse order.",
         solution: "flex-wrap: wrap-reverse;",
         frogs: [
-            { id: 1, color: 'yellow' }, 
-            { id: 2, color: 'red' }, 
-            { id: 3, color: 'blue' }, 
-            { id: 4, color: 'purple' }, 
+            { id: 1, color: 'yellow' },
+            { id: 2, color: 'red' },
+            { id: 3, color: 'blue' },
+            { id: 4, color: 'purple' },
             { id: 5, color: 'orange' },
             { id: 6, color: 'pink' },
             { id: 7, color: 'cyan' },
             { id: 8, color: 'lime' }
+
         ],
         lilyPads: [
-            { id: 1, color: 'yellow' }, 
-            { id: 2, color: 'red' }, 
-            { id: 3, color: 'blue' }, 
-            { id: 4, color: 'purple' }, 
+            { id: 1, color: 'yellow' },
+            { id: 2, color: 'red' },
+            { id: 3, color: 'blue' },
+            { id: 4, color: 'purple' },
             { id: 5, color: 'orange' },
             { id: 6, color: 'pink' },
             { id: 7, color: 'cyan' },
@@ -270,20 +340,26 @@ const LEVELS = [
         instruction: "Even with many frogs, prevent them from wrapping by using flex-wrap: nowrap - they'll squeeze together!",
         solution: "flex-wrap: nowrap;",
         frogs: [
-            { id: 1, color: 'pink' }, 
-            { id: 2, color: 'cyan' }, 
-            { id: 3, color: 'lime' }, 
-            { id: 4, color: 'indigo' }, 
+            { id: 1, color: 'pink' },
+            { id: 2, color: 'cyan' },
+            { id: 3, color: 'lime' },
+            { id: 4, color: 'indigo' },
             { id: 5, color: 'orange' },
-            { id: 6, color: 'green' }
+            { id: 6, color: 'green' },
+            { id: 7, color: 'blue' },
+            { id: 8, color: 'purple' },
+
         ],
         lilyPads: [
-            { id: 1, color: 'pink' }, 
-            { id: 2, color: 'cyan' }, 
-            { id: 3, color: 'lime' }, 
-            { id: 4, color: 'indigo' }, 
+            { id: 1, color: 'pink' },
+            { id: 2, color: 'cyan' },
+            { id: 3, color: 'lime' },
+            { id: 4, color: 'indigo' },
             { id: 5, color: 'orange' },
-            { id: 6, color: 'green' }
+            { id: 6, color: 'green' },
+            { id: 7, color: 'blue' },
+            { id: 8, color: 'purple' },
+
         ],
         allowedProperties: ['flex-wrap']
     },
@@ -294,19 +370,19 @@ const LEVELS = [
         instruction: "This tall pond has many frogs! Use flex-flow for column wrap to stack them in multiple columns.",
         solution: "flex-flow: column wrap;",
         frogs: [
-            { id: 1, color: 'indigo' }, 
-            { id: 2, color: 'orange' }, 
-            { id: 3, color: 'pink' }, 
-            { id: 4, color: 'cyan' }, 
+            { id: 1, color: 'indigo' },
+            { id: 2, color: 'orange' },
+            { id: 3, color: 'pink' },
+            { id: 4, color: 'cyan' },
             { id: 5, color: 'lime' },
             { id: 6, color: 'yellow' },
             { id: 7, color: 'red' }
         ],
         lilyPads: [
-            { id: 1, color: 'indigo' }, 
-            { id: 2, color: 'orange' }, 
-            { id: 3, color: 'pink' }, 
-            { id: 4, color: 'cyan' }, 
+            { id: 1, color: 'indigo' },
+            { id: 2, color: 'orange' },
+            { id: 3, color: 'pink' },
+            { id: 4, color: 'cyan' },
             { id: 5, color: 'lime' },
             { id: 6, color: 'yellow' },
             { id: 7, color: 'red' }
@@ -318,26 +394,32 @@ const LEVELS = [
         instruction: "A complex frog arrangement! Use flex-flow for row-reverse wrap-reverse with many frogs.",
         solution: "flex-flow: row-reverse wrap-reverse;",
         frogs: [
-            { id: 1, color: 'lime' }, 
-            { id: 2, color: 'purple' }, 
-            { id: 3, color: 'yellow' }, 
-            { id: 4, color: 'blue' }, 
+            { id: 1, color: 'lime' },
+            { id: 2, color: 'purple' },
+            { id: 3, color: 'yellow' },
+            { id: 4, color: 'blue' },
             { id: 5, color: 'red' },
             { id: 6, color: 'green' },
             { id: 7, color: 'orange' },
             { id: 8, color: 'pink' },
-            { id: 9, color: 'cyan' }
+            { id: 9, color: 'cyan' },
+            { id: 10, color: 'indigo' },
+            { id: 11, color: "black" },
+            { id: 12, color: "gray" },
         ],
         lilyPads: [
-            { id: 1, color: 'lime' }, 
-            { id: 2, color: 'purple' }, 
-            { id: 3, color: 'yellow' }, 
-            { id: 4, color: 'blue' }, 
+            { id: 1, color: 'lime' },
+            { id: 2, color: 'purple' },
+            { id: 3, color: 'yellow' },
+            { id: 4, color: 'blue' },
             { id: 5, color: 'red' },
             { id: 6, color: 'green' },
             { id: 7, color: 'orange' },
             { id: 8, color: 'pink' },
-            { id: 9, color: 'cyan' }
+            { id: 9, color: 'cyan' },
+            { id: 10, color: 'indigo' },
+            { id: 11, color: "black" },
+            { id: 12, color: "gray" }
         ],
         allowedProperties: ['flex-flow']
     },
@@ -348,24 +430,30 @@ const LEVELS = [
         instruction: "So many frogs have wrapped to multiple lines! Use align-content to pack them towards the start.",
         solution: "flex-wrap: wrap; align-content: flex-start;",
         frogs: [
-            { id: 1, color: 'green' }, 
-            { id: 2, color: 'orange' }, 
-            { id: 3, color: 'pink' }, 
-            { id: 4, color: 'cyan' }, 
+            { id: 1, color: 'green' },
+            { id: 2, color: 'orange' },
+            { id: 3, color: 'pink' },
+            { id: 4, color: 'cyan' },
             { id: 5, color: 'lime' },
             { id: 6, color: 'indigo' },
             { id: 7, color: 'yellow' },
-            { id: 8, color: 'red' }
+            { id: 8, color: 'red' },
+            { id: 9, color: "black" },
+            { id: 10, color: "gray" },
+            { id: 11, color: 'blue' },
         ],
         lilyPads: [
-            { id: 1, color: 'green' }, 
-            { id: 2, color: 'orange' }, 
-            { id: 3, color: 'pink' }, 
-            { id: 4, color: 'cyan' }, 
+            { id: 1, color: 'green' },
+            { id: 2, color: 'orange' },
+            { id: 3, color: 'pink' },
+            { id: 4, color: 'cyan' },
             { id: 5, color: 'lime' },
             { id: 6, color: 'indigo' },
             { id: 7, color: 'yellow' },
-            { id: 8, color: 'red' }
+            { id: 8, color: 'red' },
+            { id: 9, color: "black" },
+            { id: 10, color: "gray" },
+            { id: 11, color: 'blue' },
         ],
         allowedProperties: ['flex-wrap', 'align-content']
     },
@@ -374,26 +462,30 @@ const LEVELS = [
         instruction: "Use align-content to pack these multiple wrapped lines towards the end.",
         solution: "flex-wrap: wrap; align-content: flex-end;",
         frogs: [
-            { id: 1, color: 'indigo' }, 
-            { id: 2, color: 'yellow' }, 
-            { id: 3, color: 'red' }, 
-            { id: 4, color: 'blue' }, 
+            { id: 1, color: 'indigo' },
+            { id: 2, color: 'yellow' },
+            { id: 3, color: 'red' },
+            { id: 4, color: 'blue' },
             { id: 5, color: 'purple' },
             { id: 6, color: 'orange' },
             { id: 7, color: 'pink' },
             { id: 8, color: 'cyan' },
-            { id: 9, color: 'lime' }
+            { id: 9, color: 'lime' },
+            { id: 10, color: "black" },
+            { id: 11, color: "gray" },
         ],
         lilyPads: [
-            { id: 1, color: 'indigo' }, 
-            { id: 2, color: 'yellow' }, 
-            { id: 3, color: 'red' }, 
-            { id: 4, color: 'blue' }, 
+            { id: 1, color: 'indigo' },
+            { id: 2, color: 'yellow' },
+            { id: 3, color: 'red' },
+            { id: 4, color: 'blue' },
             { id: 5, color: 'purple' },
             { id: 6, color: 'orange' },
             { id: 7, color: 'pink' },
             { id: 8, color: 'cyan' },
-            { id: 9, color: 'lime' }
+            { id: 9, color: 'lime' },
+            { id: 10, color: "black" },
+            { id: 11, color: "gray" },
         ],
         allowedProperties: ['flex-wrap', 'align-content']
     },
@@ -402,10 +494,10 @@ const LEVELS = [
         instruction: "Center all these wrapped frog lines using align-content.",
         solution: "flex-wrap: wrap; align-content: center;",
         frogs: [
-            { id: 1, color: 'orange' }, 
-            { id: 2, color: 'pink' }, 
-            { id: 3, color: 'cyan' }, 
-            { id: 4, color: 'lime' }, 
+            { id: 1, color: 'orange' },
+            { id: 2, color: 'pink' },
+            { id: 3, color: 'cyan' },
+            { id: 4, color: 'lime' },
             { id: 5, color: 'indigo' },
             { id: 6, color: 'green' },
             { id: 7, color: 'yellow' },
@@ -414,10 +506,10 @@ const LEVELS = [
             { id: 10, color: 'purple' }
         ],
         lilyPads: [
-            { id: 1, color: 'orange' }, 
-            { id: 2, color: 'pink' }, 
-            { id: 3, color: 'cyan' }, 
-            { id: 4, color: 'lime' }, 
+            { id: 1, color: 'orange' },
+            { id: 2, color: 'pink' },
+            { id: 3, color: 'cyan' },
+            { id: 4, color: 'lime' },
             { id: 5, color: 'indigo' },
             { id: 6, color: 'green' },
             { id: 7, color: 'yellow' },
@@ -432,20 +524,20 @@ const LEVELS = [
         instruction: "Use align-content to distribute these many wrapped lines with space between them.",
         solution: "flex-wrap: wrap; align-content: space-between;",
         frogs: [
-            { id: 1, color: 'green' }, 
-            { id: 2, color: 'yellow' }, 
-            { id: 3, color: 'red' }, 
-            { id: 4, color: 'blue' }, 
+            { id: 1, color: 'green' },
+            { id: 2, color: 'yellow' },
+            { id: 3, color: 'red' },
+            { id: 4, color: 'blue' },
             { id: 5, color: 'purple' },
             { id: 6, color: 'orange' },
             { id: 7, color: 'pink' },
             { id: 8, color: 'cyan' }
         ],
         lilyPads: [
-            { id: 1, color: 'green' }, 
-            { id: 2, color: 'yellow' }, 
-            { id: 3, color: 'red' }, 
-            { id: 4, color: 'blue' }, 
+            { id: 1, color: 'green' },
+            { id: 2, color: 'yellow' },
+            { id: 3, color: 'red' },
+            { id: 4, color: 'blue' },
             { id: 5, color: 'purple' },
             { id: 6, color: 'orange' },
             { id: 7, color: 'pink' },
@@ -458,10 +550,10 @@ const LEVELS = [
         instruction: "Use align-content with space-around for these multiple wrapped frog lines.",
         solution: "flex-wrap: wrap; align-content: space-around;",
         frogs: [
-            { id: 1, color: 'pink' }, 
-            { id: 2, color: 'cyan' }, 
-            { id: 3, color: 'lime' }, 
-            { id: 4, color: 'indigo' }, 
+            { id: 1, color: 'pink' },
+            { id: 2, color: 'cyan' },
+            { id: 3, color: 'lime' },
+            { id: 4, color: 'indigo' },
             { id: 5, color: 'orange' },
             { id: 6, color: 'green' },
             { id: 7, color: 'yellow' },
@@ -469,10 +561,10 @@ const LEVELS = [
             { id: 9, color: 'blue' }
         ],
         lilyPads: [
-            { id: 1, color: 'pink' }, 
-            { id: 2, color: 'cyan' }, 
-            { id: 3, color: 'lime' }, 
-            { id: 4, color: 'indigo' }, 
+            { id: 1, color: 'pink' },
+            { id: 2, color: 'cyan' },
+            { id: 3, color: 'lime' },
+            { id: 4, color: 'indigo' },
             { id: 5, color: 'orange' },
             { id: 6, color: 'green' },
             { id: 7, color: 'yellow' },
@@ -486,10 +578,10 @@ const LEVELS = [
         instruction: "Distribute these numerous wrapped lines evenly using align-content: space-evenly.",
         solution: "flex-wrap: wrap; align-content: space-evenly;",
         frogs: [
-            { id: 1, color: 'cyan' }, 
-            { id: 2, color: 'lime' }, 
-            { id: 3, color: 'indigo' }, 
-            { id: 4, color: 'orange' }, 
+            { id: 1, color: 'cyan' },
+            { id: 2, color: 'lime' },
+            { id: 3, color: 'indigo' },
+            { id: 4, color: 'orange' },
             { id: 5, color: 'pink' },
             { id: 6, color: 'green' },
             { id: 7, color: 'yellow' },
@@ -498,10 +590,10 @@ const LEVELS = [
             { id: 10, color: 'purple' }
         ],
         lilyPads: [
-            { id: 1, color: 'cyan' }, 
-            { id: 2, color: 'lime' }, 
-            { id: 3, color: 'indigo' }, 
-            { id: 4, color: 'orange' }, 
+            { id: 1, color: 'cyan' },
+            { id: 2, color: 'lime' },
+            { id: 3, color: 'indigo' },
+            { id: 4, color: 'orange' },
             { id: 5, color: 'pink' },
             { id: 6, color: 'green' },
             { id: 7, color: 'yellow' },
@@ -521,7 +613,8 @@ const LEVELS = [
         frogs: [{ id: 1, color: 'orange', special: true }, { id: 2, color: 'cyan' }, { id: 3, color: 'lime' }],
         lilyPads: [{ id: 1, color: 'orange' }, { id: 2, color: 'cyan' }, { id: 3, color: 'lime' }],
         allowedProperties: ['flex-grow'],
-        applyToFrog: 1
+        applyToFrog: 1,
+        isIndividualTarget: true,
     },
     {
         id: 36,
@@ -530,7 +623,8 @@ const LEVELS = [
         frogs: [{ id: 1, color: 'indigo' }, { id: 2, color: 'pink', special: true }, { id: 3, color: 'green' }],
         lilyPads: [{ id: 1, color: 'indigo' }, { id: 2, color: 'pink' }, { id: 3, color: 'green' }],
         allowedProperties: ['flex-grow'],
-        applyToFrog: 2
+        applyToFrog: 2,
+        isIndividualTarget: true,
     },
     {
         id: 37,
@@ -539,7 +633,8 @@ const LEVELS = [
         frogs: [{ id: 1, color: 'yellow' }, { id: 2, color: 'lime' }, { id: 3, color: 'cyan', special: true }],
         lilyPads: [{ id: 1, color: 'yellow' }, { id: 2, color: 'lime' }, { id: 3, color: 'cyan' }],
         allowedProperties: ['flex-shrink'],
-        applyToFrog: 3
+        applyToFrog: 3,
+        isIndividualTarget: true,
     },
     {
         id: 38,
@@ -548,7 +643,8 @@ const LEVELS = [
         frogs: [{ id: 1, color: 'red' }, { id: 2, color: 'lime', special: true }, { id: 3, color: 'indigo' }],
         lilyPads: [{ id: 1, color: 'red' }, { id: 2, color: 'lime' }, { id: 3, color: 'indigo' }],
         allowedProperties: ['flex-basis'],
-        applyToFrog: 2
+        applyToFrog: 2,
+        isIndividualTarget: true,
     },
     {
         id: 39,
@@ -557,7 +653,8 @@ const LEVELS = [
         frogs: [{ id: 1, color: 'indigo', special: true }, { id: 2, color: 'orange' }, { id: 3, color: 'pink' }],
         lilyPads: [{ id: 1, color: 'indigo' }, { id: 2, color: 'orange' }, { id: 3, color: 'pink' }],
         allowedProperties: ['flex'],
-        applyToFrog: 1
+        applyToFrog: 1,
+        isIndividualTarget: true,
     },
 
     // COMPLEX COMBINATIONS
@@ -566,10 +663,10 @@ const LEVELS = [
         instruction: "🌈 THE ULTIMATE FROG PARTY! 🌈 Welcome to the final level! Use everything you've learned about flexbox to help this massive rainbow army of frogs reach their lily pads. This epic magical pond requires flex-direction, justify-content, align-items, and flex-wrap to create the perfect rainbow formation!",
         solution: "flex-direction: column; flex-wrap: wrap; justify-content: center; align-items: center;",
         frogs: [
-            { id: 1, color: 'green' }, 
-            { id: 2, color: 'orange' }, 
-            { id: 3, color: 'pink' }, 
-            { id: 4, color: 'cyan' }, 
+            { id: 1, color: 'green' },
+            { id: 2, color: 'orange' },
+            { id: 3, color: 'pink' },
+            { id: 4, color: 'cyan' },
             { id: 5, color: 'lime' },
             { id: 6, color: 'indigo' },
             { id: 7, color: 'yellow' },
@@ -580,10 +677,10 @@ const LEVELS = [
             { id: 12, color: 'orange' }
         ],
         lilyPads: [
-            { id: 1, color: 'green' }, 
-            { id: 2, color: 'orange' }, 
-            { id: 3, color: 'pink' }, 
-            { id: 4, color: 'cyan' }, 
+            { id: 1, color: 'green' },
+            { id: 2, color: 'orange' },
+            { id: 3, color: 'pink' },
+            { id: 4, color: 'cyan' },
             { id: 5, color: 'lime' },
             { id: 6, color: 'indigo' },
             { id: 7, color: 'yellow' },
@@ -602,31 +699,144 @@ const FlexboxFroggy = () => {
     //Game State
     const [currentLevel, setCurrentLevel] = useState(0);
     const [userCSS, setUserCSS] = useState('');
+    const [displayCSS, setDisplayCSS] = useState('');
     const [isCompleted, setIsCompleted] = useState(false);
     const [hint, setHint] = useState('');
+
+    const debounceTimer = useRef<number | undefined>(undefined);
+
+
+
+
+
+
+
+    // Add this at the top of your component
+    const previousValues = useRef<any>({});
+
+    useEffect(() => {
+        const current = {
+            currentLevel,
+            userCSS,
+            isCompleted,
+            hint,
+            levelId: level.id,
+            frogCount: level.frogs.length
+        };
+
+        Object.keys(current).forEach(key => {
+            if (previousValues.current[key] !== current[key as keyof typeof current]) {
+                console.log(`🔄 Re-render caused by: ${key}`, {
+                    old: previousValues.current[key],
+                    new: current[key as keyof typeof current]
+                });
+            }
+        });
+
+        previousValues.current = current;
+    });
+
+
+
+
+    // renderCount.current++;
 
     // Get current level data: 
     const level = LEVELS[currentLevel];
 
-    const checkSolution = useCallback(() => {
-        const normalizeCSS = (css: any) => {
-            return css
-                .trim()
-                .toLowerCase()
-                .replace(/\s+/g, ' ')
-                .replace(/;\s*$/, '') // Remove trailing semicolon
-                .replace(/:\s+/g, ':') // Normalize colons
-                .replace(/\s*;\s*/g, ';'); // Normalize semicolons
+
+    // Debounced CSS update functoin 
+    const debouncedSetUserCSS = useCallback((value: string) => {
+        // Clear previous timer
+        if (debounceTimer.current) {
+            clearTimeout(debounceTimer.current);
         }
 
-        const userNormalized = normalizeCSS(userCSS);
-        const solutionNormalized = normalizeCSS(level.solution);
+        // Set new timer
+        debounceTimer.current = setTimeout(() => {
+            console.log('🎯 Debounced update triggered');
+            setUserCSS(value);
+            setIsCompleted(false); // Reset completion status
+        }, 200); // 200ms debounce delay
+    }, []);
 
-        // also check for alternative solution - that needs to be built still not building that . 
-        const isCorrect = userNormalized === solutionNormalized;
+    // Handle CSS changes - immediate display, debounced logic
+    const handleCSSChange = useCallback((value: string) => {
+        console.log('⚡ Immediate display update');
+        setDisplayCSS(value);        // Update display immediately (no lag)
+        debouncedSetUserCSS(value);  // Update logic with debounce
+    }, [debouncedSetUserCSS]);
 
-        return isCorrect;
-    }, [userCSS, level])
+
+    // Cleanup debounce timer on unmount
+    useEffect(() => {
+        return () => {
+            if (debounceTimer.current) {
+                clearTimeout(debounceTimer.current);
+            }
+        };
+    }, []);
+
+    const renderCount = useRef(0);
+    const parseCallCount = useRef(0);
+    const cssApplicationCount = useRef(0);
+
+    const parseCSS = useCallback((css: string) => {
+        parseCallCount.current++;
+        console.log(`🔍 parseCSS called ${parseCallCount.current} times`);
+
+        const properties: Record<string, string> = {};
+        const normalizeCSS = css
+            .trim()
+            .toLowerCase()
+            .replace(/\s+/g, ' ')
+            .replace(/;\s*$/, '') // Remove trailing semicolon
+            .replace(/:\s+/g, ':') // Normalize colons
+            .replace(/\s*;\s*/g, ';'); // Normalize semicolons
+
+
+
+        const rules = normalizeCSS.split(';').filter(rule => rule.trim())
+
+
+        rules.forEach(rule => {
+            const [property, value] = rule.split(":").map(s => s.trim());
+            if (property && value) {
+                properties[property] = value;
+            }
+
+        });
+
+        return properties;
+
+
+    }, [])
+
+    const solutionProperties = useMemo(() => {
+        return parseCSS(level.solution);
+
+    }, [level.solution])
+
+    const userProperties = useMemo(() => {
+        return parseCSS(userCSS);
+
+    }, [userCSS])
+
+
+
+    // Helper function to apply CSS properties to styles object
+    const applyCSSProperties = useCallback((properties: Record<string, string>, baseStyles: Record<string, string | number>) => {
+        cssApplicationCount.current++;
+        console.log(`🎨 applyCSSProperties called ${cssApplicationCount.current} times`);
+        Object.entries(properties).forEach(([property, value]) => {
+            const camelCaseProperty = property.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+            baseStyles[camelCaseProperty] = value;
+        });
+    }, []);
+
+    // Log render performance
+    console.log(`🔄 Component rendered ${renderCount.current} times`);
+    console.log(`📊 Parse calls: ${parseCallCount.current}, CSS applications: ${cssApplicationCount.current}`);
 
     const showHint = () => {
         const hints: { [key: string]: string } = {
@@ -681,11 +891,29 @@ const FlexboxFroggy = () => {
     const nextLevel = () => {
         if (currentLevel < LEVELS.length - 1) {
             setCurrentLevel(currentLevel + 1);
+            setDisplayCSS('')
             setUserCSS('');
             setIsCompleted(false);
             setHint('');
         }
     }
+
+    const checkSolution = useCallback(() => {
+
+        if (level.validateSolution) {
+            console.log("level.validateSolution", level.validateSolution);
+            return level.validateSolution(userCSS);
+        }
+
+
+
+        // use memonized properites for comparison
+        return Object.keys(solutionProperties).every(prop =>
+            userProperties[prop] === solutionProperties[prop]
+        )
+
+    }, [userProperties, solutionProperties, userCSS, level])
+
 
     useEffect(() => {
         if (userCSS.trim() && checkSolution()) {
@@ -694,208 +922,22 @@ const FlexboxFroggy = () => {
         }
     }, [userCSS, checkSolution])
 
-
-    const getLilyPadContainerStyles = (): React.CSSProperties => {
-        const baseStyles: Record<string, string | number> = {
-            display: 'flex',
-            
-            height: '100%',
-            width: '100%',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            pointerEvents: 'none',
-            padding: "20px",
-            gap: "20px"
-        };
-
-        if (level.solution.trim()) {
-            const cssRules = level.solution.split(';').filter(rule => rule.trim());
-            cssRules.forEach(rule => {
-                const [property, value] = rule.split(':').map(s => s.trim());
-                if (property && value) {
-                    console.log(property, value);
-                    const camelCaseProperty = property.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
-                    baseStyles[camelCaseProperty] = value;
-                }
-            });
-        }
-
-        const levelConstraints = getLevelConstraints(level.id);
-        Object.assign(baseStyles, levelConstraints);
-
-        return baseStyles;
-    };
-
-    const getFrogContainerStyles = () => {
-        const baseStyles: Record<string, string | number> = {
-            display: 'flex',
-            height: '100%',
-            width: '100%',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            padding: "20px",
-            gap: "20px" // Changed from 30px to match lily pads
-        };
-
-        // Parse user CSS and apply it to position frogs
-        if (userCSS.trim()) {
-            const cssRules = userCSS.split(';').filter(rule => rule.trim());
-            cssRules.forEach(rule => {
-                const [property, value] = rule.split(':').map(s => s.trim());
-                if (property && value) {
-                    const camelCaseProperty = property.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
-                    baseStyles[camelCaseProperty] = value;
-                }
-            });
-        }
-
-        // Apply same constraints as lily pads
-        const levelConstraints = getLevelConstraints(level.id);
-        Object.assign(baseStyles, levelConstraints);
-
-        return baseStyles;
-    };
-
-    // 3. Enhanced getFrogImage helper function (add this)
-    const getFrogImage = (color: string) => {
-        const imageMap = {
-            green: "/src/assets/images/frog-green.svg",
-            red: "/src/assets/images/frog-red.svg",
-            yellow: "/src/assets/images/frog-yellow.svg",
-            purple: "/src/assets/images/frog-purple.svg",
-            blue: "/src/assets/images/frog-blue.svg",
-            orange: "/src/assets/images/frog-orange.svg", // Add if you have these
-            pink: "/src/assets/images/frog-pink.svg",
-            cyan: "/src/assets/images/frog-cyan.svg",
-            lime: "/src/assets/images/frog-lime.svg",
-            indigo: "/src/assets/images/frog-indigo.svg"
-        };
-
-        return imageMap[color as keyof typeof imageMap] || imageMap.green;
-    };
-
-    // Add these two new functions to handle individual item styling
-
-    const getLilyPadStyles = (pad: any): React.CSSProperties => {
-        const baseStyles: Record<string, string | number> = {
-            // Your existing lily pad base styles
-            width: getItemSize(level.id).width,
-            height: getItemSize(level.id).height,
-
-            borderRadius: '50%',
-            border: '2px solid rgba(255, 255, 255, 0.3)',
-            backdropFilter: 'blur(4px)',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
-            flexShrink: 0,
-            // Add background color based on pad.color
-            backgroundColor: getItemColor(pad.color)
-        };
-
-        // Apply solution CSS to specific lily pad if this level targets individual items
-        if (level.applyToFrog && pad.id === level.applyToFrog && level.solution.trim()) {
-            const cssRules = level.solution.split(';').filter(rule => rule.trim());
-            cssRules.forEach(rule => {
-                const [property, value] = rule.split(':').map(s => s.trim());
-                if (property && value) {
-                    const camelCaseProperty = property.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
-                    baseStyles[camelCaseProperty] = value;
-                }
-            });
-        }
-
-        return baseStyles;
-    };
-
-    // Helper function for dynamic item sizing
-    const getItemSize = (levelId: number) => {
-        // More items = smaller size
-        const itemCount = level.frogs.length;
-
-        if (itemCount >= 6) {
-            return { width: '60px', height: '60px' };
-        } else if (itemCount >= 4) {
-            return { width: '70px', height: '70px' };
-        } else {
-            return { width: '80px', height: '80px' };
-        }
-    };
-
-    // Helper function for dynamic font sizing
-    const getFontSize = (levelId: number) => {
-        const itemCount = level.frogs.length;
-
-        if (itemCount >= 6) {
-            return '24px';
-        } else if (itemCount >= 4) {
-            return '32px';
-        } else {
-            return '40px';
-        }
-    };
-
-    // Enhanced color palette for more frog colors
-    const getItemColor = (color: string) => {
-        const colors = {
-            green: 'rgba(34, 197, 94, 0.7)',
-            yellow: 'rgba(234, 179, 8, 0.7)',
-            purple: 'rgba(147, 51, 234, 0.7)',
-            blue: 'rgba(59, 130, 246, 0.7)',
-            red: 'rgba(244, 63, 94, 0.7)',
-            orange: 'rgba(249, 115, 22, 0.7)',
-            pink: 'rgba(236, 72, 153, 0.7)',
-            cyan: 'rgba(6, 182, 212, 0.7)',
-            lime: 'rgba(132, 204, 22, 0.7)',
-            indigo: 'rgba(99, 102, 241, 0.7)'
-        };
-
-        return colors[color as keyof typeof colors] || colors.red;
-    };
-
-    // 1. Fix getFrogStyles function - make it dynamic like getLilyPadStyles
-    const getFrogStyles = (frog: any): React.CSSProperties => {
-        const baseStyles: Record<string, string | number> = {
-            // Use dynamic sizing instead of hardcoded 80px
-            width: getItemSize(level.id).width,
-            height: getItemSize(level.id).height,
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: getFontSize(level.id), // Use dynamic font size
-            transition: 'all 0.3s ease',
-            flexShrink: 0,
-            // Highlight special frogs with outline
-            outline: frog.special ? '3px solid rgba(255, 255, 255, 0.8)' : 'none',
-            outlineOffset: '2px'
-        };
-
-        // Apply user CSS to specific frog if this level targets individual items
-        if (level.applyToFrog && frog.id === level.applyToFrog && userCSS.trim()) {
-            const cssRules = userCSS.split(';').filter(rule => rule.trim());
-            cssRules.forEach(rule => {
-                const [property, value] = rule.split(':').map(s => s.trim());
-                if (property && value) {
-                    const camelCaseProperty = property.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
-                    baseStyles[camelCaseProperty] = value;
-                }
-            });
-        }
-
-        return baseStyles;
-    };
-
-    const getLevelConstraints = (levelId: number): Record<string, string | number> => {
+    const getLevelConstraints = useCallback((levelId: number): Record<string, string | number> => {
         const constraints: Record<string, string | number> = {};
 
 
-        // Wrap demos need constrained width/height to force wrapping
-        if ([24, 25, 26].includes(levelId)) { // flex-wrap levels
-            constraints.width = '50%'; // Force wrapping with more items
-            constraints.maxWidth = '400px';
-        }
 
+        // Wrap demos need constrained width/height to force wrapping
+        // if ([24, 25, 26].includes(levelId)) { // flex-wrap levels
+        //     constraints.width = '50%'; // Force wrapping with more items
+        //     constraints.maxWidth = '400px';
+        // }
+
+        if ([24, 25, 26].includes(levelId)) {
+            constraints.width = '60%';     // More restrictive
+            constraints.maxWidth = '500px'; // Smaller max width
+            constraints.minHeight = '300px'; // Ensure enough height for wrapping
+        }
         // Column wrap demos need constrained height
         if ([27, 28].includes(levelId)) { // flex-flow column wrap levels
             constraints.height = '60%';
@@ -904,10 +946,10 @@ const FlexboxFroggy = () => {
 
         // Align-content levels need wrapping constraints
         if ([29, 30, 31, 32, 33, 34].includes(levelId)) {
-            constraints.width = '60%';
-            constraints.height = '80%';
-            constraints.maxWidth = '500px';
-            constraints.maxHeight = '400px';
+            constraints.width = '60%';      // Smaller width = more wrapping
+                constraints.height = '100%';     // More height to show flex-end effect
+                constraints.maxWidth = '500px'; // Smaller max width
+                constraints.maxHeight = '580px';
         }
 
         // Flex item property levels might need special sizing
@@ -925,7 +967,242 @@ const FlexboxFroggy = () => {
         }
 
         return constraints;
-    }
+    }, []);
+
+
+    const getLilyPadContainerStyles = useMemo((): React.CSSProperties => {
+        const baseStyles: Record<string, string | number> = {
+            display: 'flex',
+            height: '100%',
+            width: '100%',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            pointerEvents: 'none',
+            padding: "20px",
+            gap: "20px"
+        };
+
+        applyCSSProperties(solutionProperties, baseStyles);
+
+        const levelConstraints = getLevelConstraints(level.id);
+        Object.assign(baseStyles, levelConstraints);
+
+        return baseStyles;
+    }, [solutionProperties, level.id, applyCSSProperties]); // Add dependencies!
+
+    const getFrogContainerStyles = useMemo(() => {
+        const baseStyles: Record<string, string | number> = {
+            display: 'flex',
+            height: '100%',
+            width: '100%',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            padding: "20px",
+            gap: "20px"
+        };
+
+        // Special positioning logic...
+        const startPositioningLevels = [2, 7, 17, 19, 24, 28];
+        if (startPositioningLevels.includes(level.id)) {
+            if (level.id === 2) {
+                baseStyles.justifyContent = 'center';
+            } else if (level.id === 17) {
+                baseStyles.flexDirection = 'row';        // Side-by-side
+                baseStyles.justifyContent = 'center';    // Centered horizontally  
+                baseStyles.alignItems = 'center';        // Centered vertically
+            }// For align-self levels, container should center all items initially
+            else if (level.id === 19) { // "Move only indigo frog to top"
+                baseStyles.justifyContent = 'flex-start';  // Spread horizontally
+                baseStyles.alignItems = 'center';      // All centered vertically
+            } else if (level.id === 24) {
+                baseStyles.flexWrap = "nowrap",
+                    baseStyles.justifyContent = "flex-start";
+            }
+            else if (level.id === 28) {
+                baseStyles.flexWrap = "nowrap"
+            }
+
+
+
+            else if (level.id === 7) {
+                baseStyles.alignItems = "center";
+            }
+        }
+
+
+        applyCSSProperties(userProperties, baseStyles);
+
+        const levelConstraints = getLevelConstraints(level.id);
+        Object.assign(baseStyles, levelConstraints);
+
+        return baseStyles;
+    }, [userProperties, level.id, applyCSSProperties]); // Add dependencies!
+
+    // 3. Enhanced getFrogImage helper function (add this)
+    const getFrogImage = useCallback((color: string) => {
+        const imageMap = {
+            green: "/src/assets/images/frog-green.svg",
+            red: "/src/assets/images/frog-red.svg",
+            yellow: "/src/assets/images/frog-yellow.svg",
+            purple: "/src/assets/images/frog-purple.svg",
+            blue: "/src/assets/images/frog-blue.svg",
+            orange: "/src/assets/images/frog-orange.svg", // Add if you have these
+            pink: "/src/assets/images/frog-pink.svg",
+            cyan: "/src/assets/images/frog-cyan.svg",
+            lime: "/src/assets/images/frog-lime.svg",
+            indigo: "/src/assets/images/frog-indigo.svg",
+            black: "/src/assets/images/frog-black.svg",
+            gray: "/src/assets/images/frog-gray.svg"
+        };
+
+        return imageMap[color as keyof typeof imageMap] || imageMap.green;
+    }, []);
+
+    // Add these two new functions to handle individual item styling
+
+    const getLilyPadStyles = useCallback((pad: any): React.CSSProperties => {
+        const baseStyles: Record<string, string | number> = {
+            // Your existing lily pad base styles
+            width: getItemSize(level.id).width,
+            height: getItemSize(level.id).height,
+
+            borderRadius: '50%',
+            border: '2px solid rgba(255, 255, 255, 0.3)',
+            backdropFilter: 'blur(4px)',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
+            flexShrink: 0,
+            // Add background color based on pad.color
+            backgroundColor: getItemColor(pad.color)
+        };
+
+
+
+        // special handling for stretch level - lily pads show stretched targate state
+        if (level.id === 10) {
+            baseStyles.height = "100%"; // show stretched lily pads
+            baseStyles.borderRadius = "20px";
+            baseStyles.alignSelf = "Stretch";
+        }
+
+
+        if (pad.order !== undefined) {
+            baseStyles.order = pad.order;
+            console.log(pad.order);
+        }
+        // Apply solution CSS to specific lily pad if this level targets individual items
+        if (level.applyToFrog && pad.id === level.applyToFrog) {
+            applyCSSProperties(solutionProperties, baseStyles);
+        }
+
+
+
+
+
+        return baseStyles;
+    }, [level.id, level.applyToFrog, solutionProperties, applyCSSProperties]);
+
+
+    // Helper function for dynamic item sizing
+    const getItemSize = useCallback((levelId: number) => {
+        // More items = smaller size
+        const itemCount = level.frogs.length;
+
+        // Special handling for wrap levels - larger frogs to show overflow better
+        if ([24, 25, 26].includes(levelId)) {
+            return { width: '80px', height: '80px' }; // Larger frogs = more obvious overflow
+        }
+
+        if (itemCount >= 6) {
+            return { width: '60px', height: '60px' };
+        } else if (itemCount >= 4) {
+            return { width: '70px', height: '70px' };
+        } else {
+            return { width: '80px', height: '80px' };
+        }
+
+
+
+    }, [level.frogs.length]);
+
+    // Helper function for dynamic font sizing
+    const getFontSize = useCallback((levelId: number) => {
+        const itemCount = level.frogs.length;
+
+        if (itemCount >= 6) {
+            return '24px';
+        } else if (itemCount >= 4) {
+            return '32px';
+        } else {
+            return '40px';
+        }
+
+    }, [level.frogs.length]);
+
+    // Enhanced color palette for more frog colors
+    const getItemColor = (color: string) => {
+        const colors = {
+            green: 'rgba(34, 197, 94, 0.7)',
+            yellow: 'rgba(234, 179, 8, 0.7)',
+            purple: 'rgba(147, 51, 234, 0.7)',
+            blue: 'rgba(59, 130, 246, 0.7)',
+            red: 'rgba(244, 63, 94, 0.7)',
+            orange: 'rgba(249, 115, 22, 0.7)',
+            pink: 'rgba(236, 72, 153, 0.7)',
+            cyan: 'rgba(6, 182, 212, 0.7)',
+            lime: 'rgba(132, 204, 22, 0.7)',
+            indigo: 'rgba(99, 102, 241, 0.7)',
+            black: "rgba(1,1,1,1.8)",
+            gray: "rgba(128, 128,128,1)"
+        };
+
+        return colors[color as keyof typeof colors] || colors.red;
+    };
+
+    // 1. Fix getFrogStyles function - make it dynamic like getLilyPadStyles
+    const getFrogStyles = useCallback((frog: any): React.CSSProperties => {
+        const baseStyles: Record<string, string | number> = {
+            // Use dynamic sizing instead of hardcoded 80px
+            width: getItemSize(level.id).width,
+            height: getItemSize(level.id).height,
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: getFontSize(level.id), // Use dynamic font size
+            transition: 'all 0.3s ease',
+            flexShrink: 0,
+            // Highlight special frogs with outline
+            outline: frog.special ? '3px solid rgba(255, 255, 255, 0.8)' : 'none',
+            outlineOffset: '2px'
+        };
+
+
+
+        // Special handling for stretch - frogs stretch when user types correct CSS 
+        if (level.id === 10 && userCSS.includes('align-items') && userCSS.includes('stretch')) {
+            baseStyles.height = "100%";
+            baseStyles.borderRadius = '20px';
+            baseStyles.alignSelf = "stretch";
+
+            // Transform the entire container to look stretched
+            baseStyles.transform = 'scaleY(7)'; // Stretch vertically
+
+        }
+        // Apply user CSS to specific frog if this level targets individual items
+        if (level.applyToFrog && frog.id === level.applyToFrog && userCSS.trim()) {
+            applyCSSProperties(userProperties, baseStyles);
+        }
+
+        if (frog.disabled && frog.order !== undefined) {
+            baseStyles.order = frog.order
+        }
+
+        return baseStyles;
+    }, [level.id, level.applyToFrog, userCSS, userProperties, applyCSSProperties, getItemSize, getFontSize])
+
+
 
 
     const getPondStyles = (): React.CSSProperties => {
@@ -946,9 +1223,11 @@ const FlexboxFroggy = () => {
     const isFrogCorrectlyPositioned = () => {
         return userCSS.trim() && checkSolution();
     }
+
     const handleNext = () => {
         if (currentLevel < LEVELS.length - 1) {
             setCurrentLevel(() => currentLevel + 1)
+            setDisplayCSS('')
             setUserCSS('');
             setIsCompleted(false);
             setHint('');
@@ -963,6 +1242,13 @@ const FlexboxFroggy = () => {
             setHint('');
         }
     }
+
+    const targetFrog = level.frogs.find(f => f.id === level.applyToFrog);
+
+
+
+
+
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
@@ -1071,35 +1357,87 @@ const FlexboxFroggy = () => {
                             </div>
 
                             <div className="bg-slate-800/80 backdrop-blur-lg rounded-xl lg:rounded-2xl p-3 sm:p-4 lg:p-6 border border-slate-700/50 min-h-[52vh]">
-                                <div className="text-emerald-400 mb-2 font-mono text-sm sm:text-base lg:text-lg">#pond {'{'}</div>
-                                <div className="text-slate-400 ml-4 mb-1 font-mono text-sm sm:text-base">display: flex;</div>
 
-                                <div className="ml-4">
-                                    <CodeMirror
-                                        value={userCSS}
-                                        onChange={(value) => {
-                                            setUserCSS(value);
-                                            setIsCompleted(false);
-                                        }}
-                                        extensions={[css()]}
-                                        theme={oneDark}
-                                        placeholder="/* Write your flexbox magic here */"
-                                        basicSetup={{
-                                            lineNumbers: true,
-                                            // autocompletion: true,
-                                            bracketMatching: true,
-                                            closeBrackets: true,
-                                            highlightSelectionMatches: false,
-                                            searchKeymap: false,
-                                        }}
-                                        style={{
-                                            fontSize: window.innerWidth < 640 ? "14px" : "16px",
-                                            fontFamily: "JetBrains Mono, Monaco, Consolas, monospace",
-                                            backgroundColor: "transparent"
-                                        }}
-                                    />
-                                </div>
-                                <div className="text-emerald-400 font-mono text-sm sm:text-base lg:text-lg">{'}'}</div>
+                                {!level.isIndividualTarget ? <>
+                                    <div className="text-emerald-400 mb-2 font-mono text-sm sm:text-base lg:text-lg">#pond {'{'}</div>
+                                    <div className="text-slate-400 ml-4 mb-1 font-mono text-sm sm:text-base whitespace-pre-line">
+                                        {level.id === 2 ? "display: flex;\njustify-content: center;" :
+                                            level.id === 7 ? "display: flex;\nalign-items: center;" :
+                                                level.id === 24 ? "display: flex;\nflex-wrap: nowrap; /* frogs are overflowing! */" :
+                                                    "display: flex;"}
+                                    </div>
+                                    <div className="ml-4">
+                                        <CodeMirror
+                                            value={displayCSS}
+
+                                            onChange={handleCSSChange}
+                                            extensions={[css()]}
+                                            theme={oneDark}
+                                            placeholder="/* Write your flexbox magic here */"
+                                            basicSetup={{
+                                                lineNumbers: true,
+                                                bracketMatching: true,
+                                                closeBrackets: true,
+                                                highlightSelectionMatches: false,
+                                                searchKeymap: false,
+                                            }}
+
+                                            style={{
+                                                fontSize: window.innerWidth < 640 ? "14px" : "16px",
+                                                fontFamily: "JetBrains Mono, Monaco, Consolas, monospace",
+                                                backgroundColor: "transparent"
+                                            }}
+                                        />
+                                    </div>
+                                    <div className="text-emerald-400 font-mono text-sm sm:text-base lg:text-lg">{'}'}</div>
+                                </> : <>
+
+                                    <div className="text-emerald-400 mb-2 font-mono">#pond {'{'}</div>
+                                    <div className="text-slate-400 ml-4 mb-1 font-mono">display: flex;</div>
+                                    <div className="text-emerald-400 font-mono">{'}'}</div>
+
+
+                                    {/* showing preset disabled frogs */}
+                                    {level.frogs.filter(frog => frog.disabled)
+                                        .map(frog => (
+                                            <div key={frog.id} className='mt-4 opacity-60'>
+                                                <div className='text-gray-400 mb-2 font-mono'>
+                                                    .{frog.color}-frog {'{'}
+                                                </div>
+                                                <div className='ml-4  text-gray-400 font-mono'>
+                                                    order: {frog.order}
+                                                </div>
+                                                <div className='text-gray-400 font-mono'>
+                                                    {'}'}
+                                                </div>
+
+                                            </div>
+                                        ))}
+
+                                    <div className="mt-4">
+                                        <div className="text-yellow-400 mb-2 font-mono">
+                                            .{targetFrog?.color}-frog {'{'}
+                                        </div>
+                                        <div className="ml-4">
+                                            <CodeMirror
+                                                value={displayCSS}
+                                                onChange={handleCSSChange}
+                                                placeholder={`/* Style only the ${targetFrog?.color} frog */`}
+                                                basicSetup={{
+                                                    lineNumbers: true,
+                                                    bracketMatching: true,
+                                                    closeBrackets: true,
+                                                    highlightSelectionMatches: false,
+                                                    searchKeymap: false,
+                                                }}
+                                            />
+                                        </div>
+                                        <div className="text-yellow-400 font-mono">{'}'}</div>
+                                    </div>
+
+
+
+                                </>}
                             </div>
                             {isCompleted && (
                                 <div className="mt-4 p-4 bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 border border-emerald-500/30 rounded-xl backdrop-blur-lg animate-slideUp">
@@ -1149,6 +1487,7 @@ const FlexboxFroggy = () => {
                             <div className="flex items-center gap-3 mb-4">
                                 <span className="text-xl sm:text-2xl">🌊</span>
                                 <h3 className="text-base sm:text-lg lg:text-xl font-bold text-white">Magical Pond</h3>
+                                <span className='font-thin italic text-white/50 animate-pulse ml-8 '>Your task is to provide correct answer to stop the frog bouncing.</span>
                             </div>
 
                             <div
@@ -1162,7 +1501,7 @@ const FlexboxFroggy = () => {
                                 </div>
 
                                 {/* Lily Pads Container - positioned using SOLUTION CSS */}
-                                <div style={getLilyPadContainerStyles()}>
+                                <div style={getLilyPadContainerStyles}>
                                     {level.lilyPads.map(pad => (
                                         <div
                                             key={`pad-${pad.id}`}
@@ -1172,19 +1511,24 @@ const FlexboxFroggy = () => {
                                     ))}
                                 </div>
 
-                                <div style={getFrogContainerStyles()}>
+                                <div style={getFrogContainerStyles}>
                                     {/* Frogs */}
                                     {level.frogs.map(frog => (
                                         <div
                                             key={`frog-${frog.id}`}
                                             // className="w-10 h-10 sm:w-12 sm:h-12 lg:w-14 lg:h-14 rounded-full flex items-center justify-center text-xl sm:text-2xl lg:text-3xl shadow-2xl border-2 border-white/20 backdrop-blur-sm transition-all duration-500 hover:scale-110 animate-pulse"
-                                            className={`w-20 h-20 sm:w-25 sm:h-25 lg:w-30 lg:h-30 rounded-full flex items-center justify-center text-xl sm:text-2xl lg:text-3xl backdrop-blur-0 shadow-sm ${isFrogCorrectlyPositioned() ? '' : 'animate-bounce'}`}
+                                            className={`w-20 h-20 sm:w-25 sm:h-25 lg:w-30 lg:h-30 rounded-full flex items-center justify-center text-xl sm:text-2xl lg:text-3xl backdrop-blur-0 shadow-sm 
+                                             ${isFrogCorrectlyPositioned() ? '' : 'animate-bounce'} 
+                                                `}
 
                                             style={getFrogStyles(frog)}
                                         >
                                             <img
-                                                className={`${getItemSize(level.id).width === '60px' ? 'h-12 w-12' :
-                                                    getItemSize(level.id).width === '70px' ? 'h-14 w-14' : 'h-16 w-16'}`}
+                                                className={`${level.id === 10 && userCSS.includes('align-items') && userCSS.includes('stretch')
+                                                    ? 'w-full h-full object-fill' // Fill the stretched container
+                                                    : getItemSize(level.id).width === '60px' ? 'h-12 w-12' :
+                                                        getItemSize(level.id).width === '70px' ? 'h-14 w-14' : 'h-16 w-16'
+                                                    }`}
                                                 src={getFrogImage(frog.color)}
                                                 alt={`${frog.color} frog`}
                                             />
